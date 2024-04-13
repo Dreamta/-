@@ -1,4 +1,4 @@
-// import 'package:bt_system/cache.dart';
+import 'package:bt_system/cache.dart';
 import 'package:bt_system/database/database.dart';
 
 class Global {
@@ -13,7 +13,7 @@ class Global {
       // 忽略异常，因为这只是为了触发初始化
     }
 
-    // await Cache.preInit();
+    await Cache.preInit();
     // database.
   }
 }
@@ -45,4 +45,4 @@ enum SubjectType {
 }
 
 
-// //TODO: 年级要按年份自动增长
+//TODO: 年级要按年份自动增长

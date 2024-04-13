@@ -6,7 +6,6 @@ import 'package:bt_system/module/class_module.dart';
 import 'package:bt_system/module/stu_module.dart';
 import 'package:drift/drift.dart';
 import 'package:path_provider/path_provider.dart';
-// ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as p;
 import 'dart:io';
 import 'package:drift/native.dart';
