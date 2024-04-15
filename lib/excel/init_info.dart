@@ -12,15 +12,74 @@ Future initInfoFromExcel() async {
   Excel? excel = await pickFile();
   Sheet? tableToCorrect = excel?.tables[excel.tables.keys.first];
 
+  // 目前表从第八行开始有数据
+  int i = 8;
   if (tableToCorrect == null) {
     //TODO：
     // throw ExcelException(message: 'Excel为空');
   } else {
     List<CourseMoudle> courses = [];
-    // 先初始化学生数据
-    _initStuInfo(tableToCorrect);
-    _initCourseInfo(tableToCorrect, courses);
-    _initTeacherInfo(tableToCorrect);
+    while (
+        tableToCorrect.cell(CellIndex.indexByString('A${++i}')).value != null) {
+      // 保存获取到的学生姓名
+      List<Set<String>> stuStringOfGrades = [
+        <String>{},
+        <String>{},
+        <String>{},
+        <String>{},
+        <String>{},
+        <String>{},
+      ];
+      //读取年级字段
+      String? gradeString = ((tableToCorrect
+              .cell(CellIndex.indexByString('H$i'))
+              .value) as SharedString)
+          .toString();
+      // 如年级中出现非法字符，跳过该行
+      if (stringToGradeIndex[gradeString] == null) {
+        continue;
+      }
+      // 获取本节课学生信息
+      tableToCorrect
+          .cell(CellIndex.indexByString('I$i'))
+          .value
+          .toString()
+          .replaceAll('、', ' ')
+          .split(' ')
+          .forEach((studentName) =>
+              stuStringOfGrades[stringToGradeIndex[gradeString]!]
+                  .add(studentName));
+      // 识别学科
+      // 如果无法识别该行的学科，跳过
+      SubjectType? subjectType = stringToSubType[(tableToCorrect
+              .cell(CellIndex.indexByString('E$i'))
+              .value as SharedString)
+          .toString()];
+      if (subjectType == null) {
+        //TODO:干点啥
+        continue;
+      }
+      // 识别课程类型
+      //TODO: 如果无法识别课程类型需要报错
+      CourseType? courseType;
+      try {
+        courseType = stringToCourseType[(tableToCorrect
+                .cell(CellIndex.indexByString('F$i'))
+                .value as SharedString)
+            .toString()
+            .replaceAll('v', 'V')];
+        if (courseType == null) {
+          throw ExcelException(message: '课程类型非法');
+        }
+      } on ExcelException catch (e) {
+        print(e.message);
+        continue;
+      }
+      String date = (tableToCorrect.cell(CellIndex.indexByString('A$i')).value
+              as SharedString)
+          .toString()
+          .substring(0, 10);
+    }
   }
 }
 

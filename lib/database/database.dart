@@ -33,6 +33,7 @@ class Courses extends Table {
   TextColumn get courseType => text().withLength(min: 1, max: 50)();
   TextColumn get teacher => text().withLength(min: 1, max: 50)();
   IntColumn get grade => integer().customConstraint('NOT NULL')();
+  IntColumn get compensation => integer()();
   // TextColumn get studentsNames => text().withLength(min: 1, max: 8)();
 }
 
@@ -51,9 +52,9 @@ class StudentCourses extends Table {
   TextColumn get studentName => text().withLength(min: 1, max: 50)();
   IntColumn get grade => integer().customConstraint('NOT NULL')();
   IntColumn get courseId => integer().customConstraint('NOT NULL')();
-
+  IntColumn get price => integer().customConstraint('NOT NULL')();
   @override
-  Set<Column> get primaryKey => {studentName, courseId};
+  Set<Column> get primaryKey => {studentName, grade, courseId};
 }
 
 // 老师学生表
