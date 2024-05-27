@@ -25,7 +25,6 @@ class BtSystem extends StatefulWidget {
 
 class _BtSystemState extends State<BtSystem> {
   late Future initFuture;
-
   @override
   initState() {
     super.initState();

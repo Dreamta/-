@@ -14,7 +14,7 @@ class StudentModule {
   // 将 Drift 的 Student 对象转换为 StudentModule 对象
   StudentModule.fromDatabase(Student student)
       : name = student.name,
-        grade = intToGrade[student.grade]!;
+        grade = intToGrade[student.registGrade]!;
 
   // // 将 StudentModule 对象转换为 Drift 的 StudentsCompanion，用于数据库操作
   // StudentsCompanion convertModuleToStudent(StudentModule module) {

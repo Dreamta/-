@@ -6,19 +6,20 @@ import 'package:bt_system/module/class_module.dart';
 import 'package:bt_system/module/stu_module.dart';
 import 'package:bt_system/excel/pick_file.dart';
 import 'package:excel/excel.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future initInfoFromExcel() async {
   Excel? excel = await pickFile();
   Sheet? tableToCorrect = excel?.tables[excel.tables.keys.first];
-
+  MyDatabase database = Global.database;
   // 目前表从第八行开始有数据
   int i = 8;
+  List<CourseMoudle> courses = [];
   if (tableToCorrect == null) {
     //TODO：
     // throw ExcelException(message: 'Excel为空');
   } else {
-    List<CourseMoudle> courses = [];
     while (
         tableToCorrect.cell(CellIndex.indexByString('A${++i}')).value != null) {
       // 保存获取到的学生姓名
@@ -30,25 +31,27 @@ Future initInfoFromExcel() async {
         <String>{},
         <String>{},
       ];
-      //读取年级字段
-      String? gradeString = ((tableToCorrect
-              .cell(CellIndex.indexByString('H$i'))
-              .value) as SharedString)
-          .toString();
-      // 如年级中出现非法字符，跳过该行
-      if (stringToGradeIndex[gradeString] == null) {
-        continue;
+      {
+        //读取年级字段
+        String? gradeString = ((tableToCorrect
+                .cell(CellIndex.indexByString('H$i'))
+                .value) as SharedString)
+            .toString();
+        // 如年级中出现非法字符，跳过该行
+        if (stringToGradeIndex[gradeString] == null) {
+          continue;
+        }
+        // 获取本节课学生信息
+        tableToCorrect
+            .cell(CellIndex.indexByString('I$i'))
+            .value
+            .toString()
+            .replaceAll('、', ' ')
+            .split(' ')
+            .forEach((studentName) =>
+                stuStringOfGrades[stringToGradeIndex[gradeString]!]
+                    .add(studentName));
       }
-      // 获取本节课学生信息
-      tableToCorrect
-          .cell(CellIndex.indexByString('I$i'))
-          .value
-          .toString()
-          .replaceAll('、', ' ')
-          .split(' ')
-          .forEach((studentName) =>
-              stuStringOfGrades[stringToGradeIndex[gradeString]!]
-                  .add(studentName));
       // 识别学科
       // 如果无法识别该行的学科，跳过
       SubjectType? subjectType = stringToSubType[(tableToCorrect
@@ -57,6 +60,14 @@ Future initInfoFromExcel() async {
           .toString()];
       if (subjectType == null) {
         //TODO:干点啥
+        continue;
+      }
+      // 如果无法识别该行的年级，跳过
+      GRADE? grade = stringToGrade[(tableToCorrect
+              .cell(CellIndex.indexByString('H$i'))
+              .value as SharedString)
+          .toString()];
+      if (grade == null) {
         continue;
       }
       // 识别课程类型
@@ -79,124 +90,33 @@ Future initInfoFromExcel() async {
               as SharedString)
           .toString()
           .substring(0, 10);
-    }
-  }
-}
-
-_initStuInfo(Sheet table) {
-  MyDatabase database = Global.database;
-  int i = 8;
-  // 按照
-  List<Set<String>> stuStringOfGrades = [
-    <String>{},
-    <String>{},
-    <String>{},
-    <String>{},
-    <String>{},
-    <String>{},
-  ];
-  //遍历各行，如该行不为空（第一列日期有值），说明有数据，读取学生信息
-  while (table.cell(CellIndex.indexByString('A${++i}')).value != null) {
-    //读取年级字段
-    String? gradeString =
-        ((table.cell(CellIndex.indexByString('H$i')).value) as SharedString)
-            .toString();
-    // 如年级中出现非法字符，跳过该行
-    if (stringToGradeIndex[gradeString] == null) {
-      continue;
-    }
-
-    table
-        .cell(CellIndex.indexByString('I$i'))
-        .value
-        .toString()
-        .replaceAll('、', ' ')
-        .split(' ')
-        .forEach((studentName) =>
-            stuStringOfGrades[stringToGradeIndex[gradeString]!]
-                .add(studentName));
-  }
-
-  //将学生加入数据库
-  for (int i = 0; i < 6; i++) {
-    //每个年级的学生集合
-    for (String studentName in stuStringOfGrades[i]) {
-      database.insertStudent(studentName, gradeIndexToGrade[i]!);
-    }
-  }
-}
-
-_initCourseInfo(Sheet table, List<CourseMoudle> courses) {
-  int i = 8;
-  //找到第一个非空行
-  // while (table.cell(CellIndex.indexByString('A${i}')).value == null) {
-  //   i++;
-  // }
-  //遍历各行，如该行不为空（第一列日期有值），说明有课程数据
-  while (table.cell(CellIndex.indexByString('A${++i}')).value != null) {
-    // try {} catch (e) {}
-    // 如果无法识别该行的学科，跳过
-    SubjectType? subjectType = stringToSubType[
-        (table.cell(CellIndex.indexByString('E$i')).value as SharedString)
-            .toString()];
-    if (subjectType == null) {
-      //TODO:干点啥
-      continue;
-    }
-    // 如果无法识别该行的年级，跳过
-    GRADE? grade = stringToGrade[
-        (table.cell(CellIndex.indexByString('H$i')).value as SharedString)
-            .toString()];
-    if (grade == null) {
-      continue;
-    }
-    //TODO: 如果无法识别课程类型需要报错
-    CourseType? courseType;
-    try {
-      courseType = stringToCourseType[
-          (table.cell(CellIndex.indexByString('F$i')).value as SharedString)
+      CourseMoudle courseMoudle = CourseMoudle.createNewCourse(
+          date: date,
+          dayOfWeek: (tableToCorrect.cell(CellIndex.indexByString('B$i')).value
+                  as SharedString)
+              .toString(),
+          beginTime:
+              (tableToCorrect.cell(CellIndex.indexByString('C$i')).value == null
+                      ? null
+                      : tableToCorrect.cell(CellIndex.indexByString('C$i')).value
+                          as SharedString)
+                  .toString(),
+          hour: (tableToCorrect.cell(CellIndex.indexByString('D$i')).value as num)
+              .toDouble(),
+          subject: subjectType,
+          courseType: courseType,
+          teacher: (tableToCorrect.cell(CellIndex.indexByString('G$i')).value
+                  as SharedString)
+              .toString(),
+          grade: grade,
+          studentNames: (tableToCorrect.cell(CellIndex.indexByString('I$i')).value
+                  as SharedString)
               .toString()
-              .replaceAll('v', 'V')];
-      if (courseType == null) {
-        throw ExcelException(message: '课程类型非法');
-      }
-    } on ExcelException catch (e) {
-      print(e.message);
-      continue;
-    }
+              .replaceAll('、', ' ')
+              .split(' ')
+              .toList());
 
-    String date =
-        (table.cell(CellIndex.indexByString('A$i')).value as SharedString)
-            .toString()
-            .substring(0, 10);
-
-    courses.add(CourseMoudle.createNewCourse(
-        date: date,
-        dayOfWeek:
-            (table.cell(CellIndex.indexByString('B$i')).value as SharedString)
-                .toString(),
-        beginTime: (table.cell(CellIndex.indexByString('C$i')).value == null
-                ? null
-                : table.cell(CellIndex.indexByString('C$i')).value
-                    as SharedString)
-            .toString(),
-        hour: (table.cell(CellIndex.indexByString('D$i')).value as num)
-            .toDouble(),
-        subject: subjectType,
-        courseType: courseType,
-        teacher:
-            (table.cell(CellIndex.indexByString('G$i')).value as SharedString)
-                .toString(),
-        grade: grade,
-        studentNames:
-            (table.cell(CellIndex.indexByString('I$i')).value as SharedString)
-                .toString()
-                .replaceAll('、', ' ')
-                .split(' ')
-                .toList()));
-  }
-  for (CourseMoudle courseMoudle in courses) {
-    Global.database.insertCourse(
+      int courseId = await Global.database.insertCourse(
         date: courseMoudle.date,
         dayOfWeek: courseMoudle.dayOfWeek,
         beginTime: courseMoudle.beginTime ?? '',
@@ -204,11 +124,153 @@ _initCourseInfo(Sheet table, List<CourseMoudle> courses) {
         subjest: subTypeToString[courseMoudle.subject]!,
         courseType: courseTypeToString[courseMoudle.courseType]!,
         teacher: courseMoudle.teacher,
-        grade: courseMoudle.grade);
+        grade: courseMoudle.grade,
+      );
+      //将学生加入数据库
+      for (int i = 0; i < 6; i++) {
+        //每个年级的学生集合
+        for (String studentName in stuStringOfGrades[i]) {
+          database.insertStudent(
+              studentName, gradeIndexToGrade[i]!, DateTime.now().year);
+          database.insertStudentCourse(
+              stuName: studentName,
+              registGrade: i + 7,
+              registYear: DateTime.now().year,
+              id: courseId);
+        }
+      }
+
+      // Global.database.insertStudentCourse(stuName: stu, grade: grade, id: id)
+    } // while
   }
 }
 
-_initTeacherInfo(Sheet table) {}
+// _initStuInfo(Sheet table) {
+//   MyDatabase database = Global.database;
+//   int i = 8;
+//   // 按照
+//   List<Set<String>> stuStringOfGrades = [
+//     <String>{},
+//     <String>{},
+//     <String>{},
+//     <String>{},
+//     <String>{},
+//     <String>{},
+//   ];
+//   //遍历各行，如该行不为空（第一列日期有值），说明有数据，读取学生信息
+//   while (table.cell(CellIndex.indexByString('A${++i}')).value != null) {
+//     //读取年级字段
+//     String? gradeString =
+//         ((table.cell(CellIndex.indexByString('H$i')).value) as SharedString)
+//             .toString();
+//     // 如年级中出现非法字符，跳过该行
+//     if (stringToGradeIndex[gradeString] == null) {
+//       continue;
+//     }
+
+//     table
+//         .cell(CellIndex.indexByString('I$i'))
+//         .value
+//         .toString()
+//         .replaceAll('、', ' ')
+//         .split(' ')
+//         .forEach((studentName) =>
+//             stuStringOfGrades[stringToGradeIndex[gradeString]!]
+//                 .add(studentName));
+//   }
+
+//   //将学生加入数据库
+//   for (int i = 0; i < 6; i++) {
+//     //每个年级的学生集合
+//     for (String studentName in stuStringOfGrades[i]) {
+//       database.insertStudent(studentName, gradeIndexToGrade[i]!);
+//     }
+//   }
+// }
+
+// _initCourseInfo(Sheet table, List<CourseMoudle> courses) {
+//   int i = 8;
+//   //找到第一个非空行
+//   // while (table.cell(CellIndex.indexByString('A${i}')).value == null) {
+//   //   i++;
+//   // }
+//   //遍历各行，如该行不为空（第一列日期有值），说明有课程数据
+//   while (table.cell(CellIndex.indexByString('A${++i}')).value != null) {
+//     // try {} catch (e) {}
+//     // 如果无法识别该行的学科，跳过
+//     SubjectType? subjectType = stringToSubType[
+//         (table.cell(CellIndex.indexByString('E$i')).value as SharedString)
+//             .toString()];
+//     if (subjectType == null) {
+//       //TODO:干点啥
+//       continue;
+//     }
+//     // 如果无法识别该行的年级，跳过
+//     GRADE? grade = stringToGrade[
+//         (table.cell(CellIndex.indexByString('H$i')).value as SharedString)
+//             .toString()];
+//     if (grade == null) {
+//       continue;
+//     }
+//     //TODO: 如果无法识别课程类型需要报错
+//     CourseType? courseType;
+//     try {
+//       courseType = stringToCourseType[
+//           (table.cell(CellIndex.indexByString('F$i')).value as SharedString)
+//               .toString()
+//               .replaceAll('v', 'V')];
+//       if (courseType == null) {
+//         throw ExcelException(message: '课程类型非法');
+//       }
+//     } on ExcelException catch (e) {
+//       print(e.message);
+//       continue;
+//     }
+
+//     String date =
+//         (table.cell(CellIndex.indexByString('A$i')).value as SharedString)
+//             .toString()
+//             .substring(0, 10);
+
+//     courses.add(CourseMoudle.createNewCourse(
+//         date: date,
+//         dayOfWeek:
+//             (table.cell(CellIndex.indexByString('B$i')).value as SharedString)
+//                 .toString(),
+//         beginTime: (table.cell(CellIndex.indexByString('C$i')).value == null
+//                 ? null
+//                 : table.cell(CellIndex.indexByString('C$i')).value
+//                     as SharedString)
+//             .toString(),
+//         hour: (table.cell(CellIndex.indexByString('D$i')).value as num)
+//             .toDouble(),
+//         subject: subjectType,
+//         courseType: courseType,
+//         teacher:
+//             (table.cell(CellIndex.indexByString('G$i')).value as SharedString)
+//                 .toString(),
+//         grade: grade,
+//         studentNames:
+//             (table.cell(CellIndex.indexByString('I$i')).value as SharedString)
+//                 .toString()
+//                 .replaceAll('、', ' ')
+//                 .split(' ')
+//                 .toList()));
+//   }
+//   for (CourseMoudle courseMoudle in courses) {
+//     Global.database.insertCourse(
+//         date: courseMoudle.date,
+//         dayOfWeek: courseMoudle.dayOfWeek,
+//         beginTime: courseMoudle.beginTime ?? '',
+//         hour: courseMoudle.hour,
+//         subjest: subTypeToString[courseMoudle.subject]!,
+//         courseType: courseTypeToString[courseMoudle.courseType]!,
+//         teacher: courseMoudle.teacher,
+//         grade: courseMoudle.grade);
+//   }
+// }
+
+// _initTeacherInfo(Sheet table) {}
 
 const Map<String, SubjectType> stringToSubType = {
   '语文': SubjectType.chinese,

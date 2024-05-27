@@ -12,13 +12,14 @@ import 'package:drift/native.dart';
 
 part 'database.g.dart';
 
-// 学生表 需要定时更新学生年级
+// 学生表 (存入时年级和存入年份固定，计算当前年级使用 注册年级+当前年份-注册年份)
 @DataClassName('Student')
 class Students extends Table {
   TextColumn get name => text().withLength(min: 1, max: 50)();
-  IntColumn get grade => integer().customConstraint('NOT NULL')();
+  IntColumn get registGrade => integer().customConstraint('NOT NULL')();
+  IntColumn get registYear => integer().customConstraint('NOT NULL')();
   @override
-  Set<Column> get primaryKey => {name, grade};
+  Set<Column> get primaryKey => {name, registGrade, registYear};
 }
 
 // 课程表
@@ -33,7 +34,7 @@ class Courses extends Table {
   TextColumn get courseType => text().withLength(min: 1, max: 50)();
   TextColumn get teacher => text().withLength(min: 1, max: 50)();
   IntColumn get grade => integer().customConstraint('NOT NULL')();
-  IntColumn get compensation => integer()();
+  IntColumn get compensation => integer().nullable()();
   // TextColumn get studentsNames => text().withLength(min: 1, max: 8)();
 }
 
@@ -50,24 +51,29 @@ class Teachers extends Table {
 @DataClassName('Student_Course')
 class StudentCourses extends Table {
   TextColumn get studentName => text().withLength(min: 1, max: 50)();
-  IntColumn get grade => integer().customConstraint('NOT NULL')();
+  IntColumn get registGrade => integer().customConstraint('NOT NULL')();
+  IntColumn get registYear => integer().customConstraint('NOT NULL')();
   IntColumn get courseId => integer().customConstraint('NOT NULL')();
-  IntColumn get price => integer().customConstraint('NOT NULL')();
+  IntColumn get price => integer().nullable()();
   @override
-  Set<Column> get primaryKey => {studentName, grade, courseId};
+  Set<Column> get primaryKey =>
+      {studentName, registGrade, registYear, courseId};
 }
 
 // 老师学生表
 @DataClassName('Student_Teacher')
 class StudentTeacher extends Table {
   TextColumn get studentName => text().withLength(min: 1, max: 50)();
-  IntColumn get grade => integer().customConstraint('NOTNULL')();
+  IntColumn get registGrade => integer().customConstraint('NOT NULL')();
+  IntColumn get registYear => integer().customConstraint('NOT NULL')();
   TextColumn get teacherName => text().withLength(min: 1, max: 50)();
   @override
-  Set<Column> get primaryKey => {studentName, grade, teacherName};
+  Set<Column> get primaryKey =>
+      {studentName, registGrade, registYear, teacherName};
 }
 
-@DriftDatabase(tables: [Students, Courses, StudentCourses])
+@DriftDatabase(
+    tables: [Students, Courses, StudentCourses, Teachers, StudentTeacher])
 class MyDatabase extends _$MyDatabase {
   MyDatabase() : super(_openConnection());
 
@@ -113,44 +119,8 @@ class MyDatabase extends _$MyDatabase {
     await delete(courses).go();
   }
 
-  // 基于姓名和年级查找学生
-  Future<StudentModule?> getStudentByNameAndGrade(
-      String name, GRADE grade) async {
-    Student? student = await (select(students)
-          ..where((tbl) => (tbl.name.equals(name) &
-              tbl.grade.equals(gradeToInt[grade] ?? 0))))
-        .getSingleOrNull();
-    return student == null ? null : StudentModule.fromDatabase(student);
-  }
-
-  /// 删除学生
-  Future deleteAllStudent() async {
-    await delete(students).go();
-  }
-
-  /// 添加学生
-  Future<void> insertStudent(String name, GRADE grade) async {
-    // 首先检查学生是否已存在
-    final existingStudent = await (select(students)
-          ..where((tbl) =>
-              tbl.name.equals(name) & tbl.grade.equals(gradeToInt[grade] ?? 0)))
-        .getSingleOrNull();
-
-    if (existingStudent == null) {
-      // 学生不存在，插入新学生
-      final student = StudentsCompanion(
-        name: Value(name),
-        grade: Value(gradeToInt[grade] ?? 0),
-      );
-      await into(students).insert(student);
-    } else {
-      // 学生已存在，处理相应逻辑（例如返回错误消息）
-      // ...
-    }
-  }
-
   /// 添加课程
-  Future<void> insertCourse(
+  Future<int> insertCourse(
       {required String date,
       required String dayOfWeek,
       required String beginTime,
@@ -170,7 +140,108 @@ class MyDatabase extends _$MyDatabase {
       grade: Value(gradeToInt[grade] ?? 0),
     );
 
-    await into(courses).insert(course);
+    return await into(courses).insert(course);
+  }
+
+  // 删除所有学生课程关系
+  Future deleteAllStudentCourses() async {
+    await delete(studentCourses).go();
+  }
+
+  // 添加老师
+  Future<void> insertTeacher(String name) async {
+    final existTeacher = await (select(teachers)
+          ..where((tbl) => tbl.name.equals(name)))
+        .getSingleOrNull();
+    if (existTeacher == null) {
+      final TeachersCompanion teacher = TeachersCompanion(name: Value(name));
+      await into(teachers).insert(teacher);
+    } else {
+      // 抛出错误信息
+    }
+  }
+
+  // 删除所有老师
+  Future deleteAllTeachers() async {
+    await delete(teachers).go();
+  }
+
+  // 基于姓名和当前年级查找学生
+  Future<StudentModule?> getStudentByNameAndGrade(
+      String name, GRADE curGrade, int curYear) async {
+    // int expectGrade = (gradeToInt[curGrade] ?? 0) - tbl.registGrade + curYear;
+    Student? student = await (select(students)
+          ..where((tbl) => (tbl.name.equals(name) &
+              // 注册年级 = 当前年级 - 注册年份 + 当前年份
+
+              tbl.registGrade.equals((gradeToInt[curGrade] ?? 0) -
+                  (tbl.registGrade as int) +
+                  curYear))))
+        .getSingleOrNull();
+    return student == null ? null : StudentModule.fromDatabase(student);
+  }
+
+  /// 删除学生
+  Future deleteAllStudent() async {
+    await delete(students).go();
+  }
+
+  /// 添加学生
+  Future<void> insertStudent(String name, GRADE grade, int year) async {
+    // 首先检查学生是否已存在
+    final existingStudent = await (select(students)
+          ..where((tbl) =>
+              tbl.name.equals(name) &
+              tbl.registGrade.equals(gradeToInt[grade] ?? 0) &
+              tbl.registYear.equals(year)))
+        .getSingleOrNull();
+
+    if (existingStudent == null) {
+      // 学生不存在，插入新学生
+      final student = StudentsCompanion(
+          name: Value(name),
+          registGrade: Value(gradeToInt[grade] ?? 0),
+          registYear: Value(year));
+      await into(students).insert(student);
+    } else {
+      // 学生已存在，处理相应逻辑（例如返回错误消息）
+      // ...
+    }
+  }
+
+  // 添加学生课程关系(添加课程时必需同步执行，没有没有学生的课)
+  Future insertStudentCourse(
+      {required String stuName,
+      required int registGrade,
+      required int registYear,
+      required int id,
+      int? price}) async {
+    final StudentCoursesCompanion companion = StudentCoursesCompanion(
+        studentName: Value(stuName),
+        registGrade: Value(registGrade),
+        registYear: Value(registYear),
+        courseId: Value(id),
+        price: Value(price ?? -1));
+
+    return await into(studentCourses).insert(companion);
+  }
+
+  // 添加老师学生关系
+  Future insertStudentTeacher(
+      {required String stuName,
+      required GRADE registGrade,
+      required int registYear,
+      required String teacherName}) async {
+    StudentTeacherCompanion studentTeacherCompanion = StudentTeacherCompanion(
+        studentName: Value(stuName),
+        registGrade: Value(gradeToInt[registGrade] ?? 0),
+        registYear: Value(registYear));
+    return await into(studentTeacher).insert(studentTeacherCompanion);
+  }
+
+  // 删除老师学生关系
+  Future deleteStudentTeacher() async {
+    await delete(studentTeacher).go();
   }
 }
 
