@@ -3,7 +3,9 @@ import 'dart:ffi';
 import 'package:bt_system/exception/database_exception.dart';
 import 'package:bt_system/global.dart';
 import 'package:bt_system/module/class_module.dart';
+import 'package:bt_system/module/module_template.dart';
 import 'package:bt_system/module/stu_module.dart';
+import 'package:bt_system/module/teacher_module.dart';
 import 'package:drift/drift.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -80,6 +82,8 @@ class MyDatabase extends _$MyDatabase {
   @override
   int get schemaVersion => 1;
 
+// 删除
+
   /// 查找所有学生,若没找到数据会返回一个空列表
   Future<List<StudentModule>> getAllStudents() async {
     List<dynamic> studentList;
@@ -114,8 +118,21 @@ class MyDatabase extends _$MyDatabase {
     }
   }
 
-  // 删除所有课程
+  /// 查找所有老师
+  Future<List<TeacherModule>> getAllTeacher() async {
+    List<dynamic> teacherData;
+
+    try {
+      teacherData = await select(teachers).get();
+      return teacherData.map((e) => TeacherModule.fromDatabase(e)).toList();
+    } catch (e) {
+      throw DataNotFoundException();
+    }
+  }
+
+  /// 删除所有课程
   Future deleteAllCourses() async {
+    await delete(studentCourses).go();
     await delete(courses).go();
   }
 
@@ -143,12 +160,13 @@ class MyDatabase extends _$MyDatabase {
     return await into(courses).insert(course);
   }
 
-  // 删除所有学生课程关系
+  /// 删除所有学生课程关系
+  /// 单独暴露
   Future deleteAllStudentCourses() async {
     await delete(studentCourses).go();
   }
 
-  // 添加老师
+  /// 添加老师
   Future<void> insertTeacher(String name) async {
     final existTeacher = await (select(teachers)
           ..where((tbl) => tbl.name.equals(name)))
@@ -161,47 +179,70 @@ class MyDatabase extends _$MyDatabase {
     }
   }
 
-  // 删除所有老师
+  /// 删除所有老师
   Future deleteAllTeachers() async {
+    // 因为课程和老师是一一对应关系，所以删除老师时要把对应课程删除
+    await delete(courses).go();
+    // 同理删除老师学生关系
+    await delete(studentTeacher).go();
     await delete(teachers).go();
   }
 
-  // 基于姓名和当前年级查找学生
-  Future<StudentModule?> getStudentByNameAndGrade(
-      String name, GRADE curGrade, int curYear) async {
+  /// 基于姓名和当前年级查找学生
+  Future<Student> getStudentByNameAndGrade(String name, GRADE curGrade) async {
     // int expectGrade = (gradeToInt[curGrade] ?? 0) - tbl.registGrade + curYear;
+
     Student? student = await (select(students)
           ..where((tbl) => (tbl.name.equals(name) &
               // 注册年级 = 当前年级 - 注册年份 + 当前年份
 
               tbl.registGrade.equals((gradeToInt[curGrade] ?? 0) -
-                  (tbl.registGrade as int) +
-                  curYear))))
+                  (tbl.registYear as int) +
+                  Global.caculateStudyYear()))))
         .getSingleOrNull();
-    return student == null ? null : StudentModule.fromDatabase(student);
+    if (student == null) {
+      throw Error();
+    }
+    return student;
   }
 
-  /// 删除学生
+  /// 删除所有学生
   Future deleteAllStudent() async {
+    // 删除对应的老师学生关系
+    await delete(studentTeacher).go();
+    await delete(studentCourses).go();
     await delete(students).go();
   }
 
+  // 删除指定学生
+  Future deleteStudent({required String name, required GRADE curGrade}) async {
+    await (delete(students)
+          ..where((tbl) => (tbl.name.equals(name) &
+              // 注册年级 = 当前年级 - 注册年份 + 当前年份
+
+              tbl.registGrade.equals((gradeToInt[curGrade] ?? 0) -
+                  (tbl.registYear as int) +
+                  Global.caculateStudyYear()))))
+        .go();
+  }
+
   /// 添加学生
-  Future<void> insertStudent(String name, GRADE grade, int year) async {
+  Future<void> insertStudent(String name, GRADE curGrade) async {
     // 首先检查学生是否已存在
     final existingStudent = await (select(students)
           ..where((tbl) =>
               tbl.name.equals(name) &
-              tbl.registGrade.equals(gradeToInt[grade] ?? 0) &
-              tbl.registYear.equals(year)))
+              // 检测注册年级 = 注册年级 + 注册学年 - 当前学年
+              tbl.registGrade.equals(gradeToInt[curGrade] ??
+                  0 - (tbl.registYear as int) + Global.caculateStudyYear())))
         .getSingleOrNull();
 
     if (existingStudent == null) {
       // 学生不存在，插入新学生
       final student = StudentsCompanion(
           name: Value(name),
-          registGrade: Value(gradeToInt[grade] ?? 0),
-          registYear: Value(year));
+          registGrade: Value(gradeToInt[curGrade] ?? 0),
+          registYear: Value(Global.caculateStudyYear()));
       await into(students).insert(student);
     } else {
       // 学生已存在，处理相应逻辑（例如返回错误消息）
@@ -209,7 +250,8 @@ class MyDatabase extends _$MyDatabase {
     }
   }
 
-  // 添加学生课程关系(添加课程时必需同步执行，没有没有学生的课)
+  /// 添加学生课程关系(添加课程时必需同步执行，没有没有学生的课),
+  /// 需要允许对外暴露这个函数，因为需要为一个课程单独添加学生
   Future insertStudentCourse(
       {required String stuName,
       required int registGrade,
@@ -226,7 +268,7 @@ class MyDatabase extends _$MyDatabase {
     return await into(studentCourses).insert(companion);
   }
 
-  // 添加老师学生关系
+  /// 添加老师学生关系
   Future insertStudentTeacher(
       {required String stuName,
       required GRADE registGrade,
@@ -239,8 +281,37 @@ class MyDatabase extends _$MyDatabase {
     return await into(studentTeacher).insert(studentTeacherCompanion);
   }
 
-  // 删除老师学生关系
-  Future deleteStudentTeacher() async {
+  // 查找老师学生关系
+  Future _getStudentTeacher(Moudle moudle) async {
+    List<Student_Teacher> stuTeacherList = await (select(studentTeacher)
+          ..where(
+              (tbl) => tbl.studentName.equals((moudle as StudentModule).name)))
+        .get();
+    // 根据学生查找关系表
+    if (moudle is StudentModule) {
+    } else if (moudle is TeacherModule) {}
+  }
+
+  // 根据学生或老师删除对应关系
+  Future _deleteStuTeacherByStuOrTeacher(Moudle moudle) async {
+    // 根据学生查找关系表
+    if (moudle is StudentModule) {
+      await (delete(studentTeacher)
+            ..where((tbl) =>
+                tbl.studentName.equals(moudle.name) &
+                tbl.registGrade.equals((gradeToInt[moudle.grade] ?? 0) -
+                    (tbl.registGrade as int) +
+                    Global.caculateStudyYear())))
+          .go();
+    } else if (moudle is TeacherModule) {
+      await (delete(studentTeacher)
+            ..where((tbl) => tbl.teacherName.equals(moudle.name)))
+          .go();
+    }
+  }
+
+  // 删除所有老师学生关系
+  Future _deleteStudentTeacher() async {
     await delete(studentTeacher).go();
   }
 }

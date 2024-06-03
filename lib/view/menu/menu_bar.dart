@@ -67,10 +67,9 @@ class _BTMenuBarState extends State<BTMenuBar> {
       ]),
       PlutoMenuItem(title: '老师', children: [
         PlutoMenuItem(
-          title: '添加老师1',
+          title: '清空老师',
           onTap: () async {
-            await Global.database.getStudentByNameAndGrade(
-                'jiyuchen', GRADE.grade10, DateTime.now().year);
+            await Global.database.deleteAllTeachers();
           },
         ),
       ]),

@@ -2,8 +2,9 @@ import 'package:bt_system/database/database.dart';
 import 'package:bt_system/excel/init_info.dart';
 // import 'package:bt_system/excel/init_info.dart';
 import 'package:bt_system/global.dart';
+import 'package:bt_system/module/module_template.dart';
 
-class CourseMoudle {
+class CourseMoudle extends Moudle {
   String date;
   String dayOfWeek;
   String? beginTime;

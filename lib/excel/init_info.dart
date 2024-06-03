@@ -130,8 +130,7 @@ Future initInfoFromExcel() async {
       for (int i = 0; i < 6; i++) {
         //每个年级的学生集合
         for (String studentName in stuStringOfGrades[i]) {
-          database.insertStudent(
-              studentName, gradeIndexToGrade[i]!, DateTime.now().year);
+          database.insertStudent(studentName, gradeIndexToGrade[i]!);
           database.insertStudentCourse(
               stuName: studentName,
               registGrade: i + 7,

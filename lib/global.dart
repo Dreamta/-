@@ -16,6 +16,11 @@ class Global {
     await Cache.preInit();
     // database.
   }
+
+  static int caculateStudyYear() {
+    // 如果是九月以后则学年加 1
+    return DateTime.now().year + DateTime.now().month > 8 ? 1 : 0;
+  }
 }
 
 /// 常量定义

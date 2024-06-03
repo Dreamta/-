@@ -1,10 +1,11 @@
 import 'package:bt_system/database/database.dart';
 import 'package:bt_system/global.dart';
 import 'package:bt_system/module/class_module.dart';
+import 'package:bt_system/module/module_template.dart';
 
-class StudentModule {
+class StudentModule extends Moudle {
   // late int id;
-  // 根据年级和姓名唯一确认一个学生
+
   String name;
   GRADE grade;
   final Set<CourseMoudle> _courses = <CourseMoudle>{};
