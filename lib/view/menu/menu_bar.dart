@@ -52,7 +52,15 @@ class _BTMenuBarState extends State<BTMenuBar> {
         PlutoMenuItem(
           title: '查看所有课程',
           onTap: () async {
-            courseMoudles = await Global.database.getAllCourses();
+            try {
+              for (var e in (await Global.database.getAllCourses())) {
+                CourseMoudle.fromDatabase(e);
+              }
+            } catch (e) {
+              // TODO:弹窗
+              print(e);
+            }
+
             for (var course in courseMoudles) {
               print(course.courseType);
             }

@@ -779,7 +779,7 @@ class $StudentCoursesTable extends StudentCourses
       'course_id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL');
+      $customConstraints: 'NOT NULL REFERENCES courses(id) ON DELETE CASCADE');
   static const VerificationMeta _priceMeta = const VerificationMeta('price');
   @override
   late final GeneratedColumn<int> price = GeneratedColumn<int>(
@@ -1506,4 +1506,16 @@ abstract class _$MyDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [students, courses, studentCourses, teachers, studentTeacher];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
+        [
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('courses',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('student_courses', kind: UpdateKind.delete),
+            ],
+          ),
+        ],
+      );
 }
