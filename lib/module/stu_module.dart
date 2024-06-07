@@ -7,15 +7,20 @@ class StudentModule extends Moudle {
   // late int id;
 
   String name;
-  GRADE grade;
+  GRADE registGrade;
+  int registYear;
   final Set<CourseMoudle> _courses = <CourseMoudle>{};
 
-  StudentModule.createNewStudent({required this.name, required this.grade});
+  StudentModule.createNewStudent(
+      {required this.name,
+      required this.registGrade,
+      required this.registYear});
 
   // 将 Drift 的 Student 对象转换为 StudentModule 对象
   StudentModule.fromDatabase(Student student)
       : name = student.name,
-        grade = intToGrade[student.registGrade]!;
+        registGrade = intToGrade[student.registGrade]!,
+        registYear = student.registYear;
 
   // // 将 StudentModule 对象转换为 Drift 的 StudentsCompanion，用于数据库操作
   // StudentsCompanion convertModuleToStudent(StudentModule module) {

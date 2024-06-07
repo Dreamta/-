@@ -1,54 +1,10 @@
-import 'package:bt_system/view/menu/menu_bar.dart';
-import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-
-class CustomWindow extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: WindowBorder(
-        color: Colors.blueGrey,
-        width: 1,
-        child: Row(
-          children: [
-            LeftSide(),
-            Expanded(child: RightSide()),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class LeftSide extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 200,
-      child: Container(
-        color: Colors.white,
-        child: Column(
-          children: [
-            // 这里可以添加您的菜单栏组件
-            Expanded(
-                child: Column(
-              children: [
-                Container(
-                  height: 30,
-                  decoration: BoxDecoration(color: Colors.amber),
-                  child: BTMenuBar(),
-                ),
-                Expanded(child: Container())
-              ],
-            )),
-          ],
-        ),
-      ),
-    );
-  }
-}
+import 'package:flutter/material.dart';
 
 class RightSide extends StatelessWidget {
+  List? list;
+  RightSide({super.key, required this.list});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -70,6 +26,7 @@ class RightSide extends StatelessWidget {
   }
 }
 
+// 右上角的窗口操作按钮
 class WindowButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

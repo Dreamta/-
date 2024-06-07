@@ -112,12 +112,17 @@ Future initInfoFromExcel() async {
               .split(' ')
               .toList());
 
+// 将老师加入数据库
+      await Global.database.addTeacher(
+          name: (tableToCorrect.cell(CellIndex.indexByString('G$i')).value
+                  as SharedString)
+              .toString());
       int courseId = await Global.database.addCourse(
         date: courseMoudle.date,
         dayOfWeek: courseMoudle.dayOfWeek,
         beginTime: courseMoudle.beginTime ?? '',
         hour: courseMoudle.hour,
-        subjest: subTypeToString[courseMoudle.subject]!,
+        subject: subTypeToString[courseMoudle.subject]!,
         courseType: courseTypeToString[courseMoudle.courseType]!,
         teacher: courseMoudle.teacher,
         grade: courseMoudle.grade,
@@ -127,11 +132,8 @@ Future initInfoFromExcel() async {
         //每个年级的学生集合
         for (String studentName in stuStringOfGrades[i]) {
           database.addStudent(studentName, gradeIndexToGrade[i]!);
-          database.insertStudentCourse(
-              stuName: studentName,
-              registGrade: i + 7,
-              registYear: DateTime.now().year,
-              id: courseId);
+          database.addStudentCourse(
+              studentName: studentName, registGrade: i + 7, courseId: courseId);
         }
       }
 
@@ -139,72 +141,3 @@ Future initInfoFromExcel() async {
     } // while
   }
 }
-
-const Map<String, SubjectType> stringToSubType = {
-  '语文': SubjectType.chinese,
-  '生物': SubjectType.biology,
-  '化学': SubjectType.chemistry,
-  '英语': SubjectType.english,
-  '地理': SubjectType.geography,
-  '历史': SubjectType.history,
-  '日本': SubjectType.japanese,
-  '数学': SubjectType.math,
-  '物理': SubjectType.physics,
-  '政治': SubjectType.polity
-};
-
-const Map<SubjectType, String> subTypeToString = {
-  SubjectType.chinese: '语文',
-  SubjectType.biology: '生物',
-  SubjectType.chemistry: '化学',
-  SubjectType.english: '英语',
-  SubjectType.geography: '地理',
-  SubjectType.history: '历史',
-  SubjectType.japanese: '日本',
-  SubjectType.math: '数学',
-  SubjectType.physics: '物理',
-  SubjectType.polity: '政治'
-};
-
-const Map<String, CourseType> stringToCourseType = {
-  '1V1': CourseType.t_1V1,
-  '1V2': CourseType.t_1V2,
-  '1V3': CourseType.t_1V3,
-  '1V4': CourseType.t_1V4,
-  '班课': CourseType.t_class
-};
-
-Map<CourseType, String> courseTypeToString = {
-  CourseType.t_1V1: '1V1',
-  CourseType.t_1V2: '1V2',
-  CourseType.t_1V3: '1V3',
-  CourseType.t_1V4: '1V4',
-  CourseType.t_class: '班课'
-};
-
-const Map<String, int> stringToGradeIndex = {
-  '初一': 0,
-  '初二': 1,
-  '初三': 2,
-  '高一': 3,
-  '高二': 4,
-  '高三': 5,
-};
-
-const Map<int, GRADE> gradeIndexToGrade = {
-  0: GRADE.grade7,
-  1: GRADE.grade8,
-  2: GRADE.grade9,
-  3: GRADE.grade10,
-  4: GRADE.grade11,
-  5: GRADE.grade12,
-};
-
-const Map<String, GRADE> stringToGrade = {
-  '初一': GRADE.grade7,
-  '初二': GRADE.grade8,
-  '初三': GRADE.grade9,
-  '高一': GRADE.grade10,
-  '高二': GRADE.grade11,
-  '高三': GRADE.grade12,
-};
