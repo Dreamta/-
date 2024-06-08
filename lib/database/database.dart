@@ -93,26 +93,28 @@ class MyDatabase extends _$MyDatabase {
   int get schemaVersion => 1;
 
   // 查找所有学生
-  Future<List<Student>> getAllStudents() => select(students).get();
+  Future<List<Student>> getAllStudents() async => await select(students).get();
 
   // 查找所有老师
-  Future<List<Teacher>> getAllTeachers() => select(teachers).get();
+  Future<List<Teacher>> getAllTeachers() async => await select(teachers).get();
 
   // 查找所有课程
-  Future<List<Course>> getAllCourses() => select(courses).get();
+  Future<List<Course>> getAllCourses() async => await select(courses).get();
 
   // 根据姓名查找学生
-  Future<List<Student>> findStudentsByName(String name) {
-    return (select(students)..where((tbl) => tbl.name.equals(name))).get();
+  Future<List<Student>> findStudentsByName(String name) async {
+    return await (select(students)..where((tbl) => tbl.name.equals(name)))
+        .get();
   }
 
   // 根据姓名查找老师
-  Future<List<Teacher>> findTeachersByName(String name) {
-    return (select(teachers)..where((tbl) => tbl.name.equals(name))).get();
+  Future<List<Teacher>> findTeachersByName(String name) async {
+    return await (select(teachers)..where((tbl) => tbl.name.equals(name)))
+        .get();
   }
 
   // 根据年级查找学生
-  Future<List<Student>> findStudentsByGrade(GRADE curGrade) {
+  Future<List<Student>> findStudentsByGrade(GRADE curGrade) async {
     final query = select(students)
       ..where((tbl) => (
           // 注册年级 = 当前年级 - 注册年份 + 当前年份
@@ -120,23 +122,8 @@ class MyDatabase extends _$MyDatabase {
           tbl.registGrade.equals((gradeToInt[curGrade] ?? 0) -
               (tbl.registYear as int) +
               Global.caculateStudyYear())));
-    return query.get();
+    return await query.get();
   }
-
-  // 查找某学生上过的所有课程
-  // Future<List<Course>> findCoursesByStudent(
-  //     String name, GRADE registGrade, int registYear) async {
-  //   final coursesIdInQuery = select(studentCourses)
-  //     ..where((tbl) =>
-  //         tbl.studentName.equals(name) &
-  //         tbl.registGrade.equals(gradeToInt[registGrade]!) &
-  //         tbl.registYear.equals(registYear))
-  //     ..map((row) => row.courseId);
-  //   Future<List<Course>> list = (select(courses)
-  //         ..where((course) => course.id.isInQuery(coursesIdInQuery)))
-  //       .get();
-  //   return await list;
-  // }
 
 // 查找某学生上过的所有课程
   Future<List<Course>> findCoursesByStudent(
@@ -166,8 +153,8 @@ class MyDatabase extends _$MyDatabase {
   }
 
   // 查找某课程的所有学生
-  Future<List<Student>> findStudentsByCourse(int courseId) {
-    return (select(students)
+  Future<List<Student>> findStudentsByCourse(int courseId) async {
+    return await (select(students)
           ..where((student) => student.name.isInQuery(
                 select(studentCourses)
                   ..where((tbl) => tbl.courseId.equals(courseId))
@@ -177,35 +164,37 @@ class MyDatabase extends _$MyDatabase {
   }
 
   // 根据课程名字查找课程
-  Future<List<Course>> findCoursesByName(String subject) {
-    return (select(courses)..where((tbl) => tbl.subject.equals(subject))).get();
+  Future<List<Course>> findCoursesByName(String subject) async {
+    return await (select(courses)..where((tbl) => tbl.subject.equals(subject)))
+        .get();
   }
 
   // 查找某老师上过的所有课程
-  Future<List<Course>> findCoursesByTeacher(String teacherName) {
-    return (select(courses)..where((tbl) => tbl.teacher.equals(teacherName)))
+  Future<List<Course>> findCoursesByTeacher(String teacherName) async {
+    return await (select(courses)
+          ..where((tbl) => tbl.teacher.equals(teacherName)))
         .get();
   }
 
   // 根据时间范围查找课程
   Future<List<Course>> findCoursesByDateRange(
-      String startDate, String endDate) {
+      String startDate, String endDate) async {
     final query = select(courses)
       ..where((tbl) => tbl.date.isBetweenValues(startDate, endDate));
-    return query.get();
+    return await query.get();
   }
 
   // 查找某年级所有课程
-  Future<List<Course>> findCoursesByGrade(GRADE grade) {
+  Future<List<Course>> findCoursesByGrade(GRADE grade) async {
     final query = select(courses)
       ..where((tbl) => tbl.grade.equals(gradeToInt[grade]!));
-    return query.get();
+    return await query.get();
   }
 
 // 查找某学生的所有老师
   Future<List<Teacher>> findTeachersByStudent(
-      String studentName, int registGrade, int registYear) {
-    return (select(teachers)
+      String studentName, int registGrade, int registYear) async {
+    return await (select(teachers)
           ..where((teacher) => teacher.name.isInQuery(
                 select(courses).join([
                   innerJoin(studentCourses,
@@ -220,8 +209,8 @@ class MyDatabase extends _$MyDatabase {
   }
 
   // 查找某老师的所有学生
-  Future<List<Student>> findStudentsByTeacher(String teacherName) {
-    return (select(students)
+  Future<List<Student>> findStudentsByTeacher(String teacherName) async {
+    return await (select(students)
           ..where((student) => student.name.isInQuery(
                 select(studentCourses).join([
                   innerJoin(
@@ -276,8 +265,8 @@ class MyDatabase extends _$MyDatabase {
     required GRADE grade,
     String? beginTime,
     double? hour,
-  }) {
-    return into(courses).insert(CoursesCompanion.insert(
+  }) async {
+    return await into(courses).insert(CoursesCompanion.insert(
       date: (date),
       dayOfWeek: (dayOfWeek),
       beginTime: Value(beginTime),
@@ -294,8 +283,8 @@ class MyDatabase extends _$MyDatabase {
       {required String studentName,
       required int registGrade,
       required int courseId,
-      int? price}) {
-    return into(studentCourses).insert(StudentCoursesCompanion.insert(
+      int? price}) async {
+    return await into(studentCourses).insert(StudentCoursesCompanion.insert(
       studentName: (studentName),
       registGrade: (registGrade),
       registYear: (studyYear),
@@ -311,13 +300,13 @@ class MyDatabase extends _$MyDatabase {
   }
 
   // 删除所有老师
-  Future<int> deleteAllTeachers() {
-    return delete(teachers).go();
+  Future<int> deleteAllTeachers() async {
+    return await delete(teachers).go();
   }
 
   // 删除所有课程
-  Future<int> deleteAllCourses() {
-    return delete(courses).go();
+  Future<int> deleteAllCourses() async {
+    return await delete(courses).go();
   }
 
   // 删除所有学生-课程关系
@@ -344,14 +333,14 @@ class MyDatabase extends _$MyDatabase {
   }
 
   // 单独删除特定课程
-  Future<int> deleteCourse(int id) {
-    return (delete(courses)..where((tbl) => tbl.id.equals(id))).go();
+  Future<int> deleteCourse(int id) async {
+    return await (delete(courses)..where((tbl) => tbl.id.equals(id))).go();
   }
 
   // 单独删除特定学生-课程关系
   Future deleteStudentCourse(String studentName, GRADE registGrade,
       int registYear, int courseId) async {
-    (delete(studentCourses)
+    await (delete(studentCourses)
           ..where((tbl) =>
               tbl.studentName.equals(studentName) &
               tbl.registGrade.equals(gradeToInt[registGrade]!) &
@@ -377,24 +366,11 @@ class MyDatabase extends _$MyDatabase {
   }
 }
 
-// // 链接数据库
-// LazyDatabase _openConnection() {
-//   return LazyDatabase(() async {
-//     final dbFolder = await getApplicationDocumentsDirectory();
-//     print(dbFolder.path);
-//     final file = File(p.join(dbFolder.path, 'db.sqlite'));
-//     return NativeDatabase(file, logStatements: true);
-//   });
-// }
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'db.sqlite'));
     final NativeDatabase db = NativeDatabase(file, logStatements: true);
-
-    // // 确保外键约束启用
-    // await db.ensureOpen(MyDatabase()); // 确保数据库连接打开
-    // await db.executor.runCustom('PRAGMA foreign_keys = ON');
 
     return db;
   });

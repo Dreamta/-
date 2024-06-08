@@ -17,37 +17,25 @@ Future initInfoFromExcel() async {
     throw ExcelException(message: 'Excel为空');
   } else {
     while (
+        // 根据每行信息（一节课的信息录入）
         tableToCorrect.cell(CellIndex.indexByString('A${++i}')).value != null) {
-      // 保存获取到的学生姓名
-      List<Set<String>> stuStringOfGrades = [
-        <String>{},
-        <String>{},
-        <String>{},
-        <String>{},
-        <String>{},
-        <String>{},
-      ];
-      {
-        //读取年级字段
-        String? gradeString = ((tableToCorrect
-                .cell(CellIndex.indexByString('H$i'))
-                .value) as SharedString)
-            .toString();
-        // 如年级中出现非法字符，跳过该行
-        if (stringToGradeIndex[gradeString] == null) {
-          continue;
-        }
-        // 获取本节课学生信息
-        tableToCorrect
-            .cell(CellIndex.indexByString('I$i'))
-            .value
-            .toString()
-            .replaceAll('、', ' ')
-            .split(' ')
-            .forEach((studentName) =>
-                stuStringOfGrades[stringToGradeIndex[gradeString]!]
-                    .add(studentName));
+      //读取年级字段
+      String? gradeString = ((tableToCorrect
+              .cell(CellIndex.indexByString('H$i'))
+              .value) as SharedString)
+          .toString();
+      // 如年级中出现非法字符，跳过该行
+      if (stringToGradeIndex[gradeString] == null) {
+        continue;
       }
+
+      List<String> studentNames = tableToCorrect
+          .cell(CellIndex.indexByString('I$i'))
+          .value
+          .toString()
+          .replaceAll('、', ' ')
+          .split(' ');
+
       // 识别学科
       // 如果无法识别该行的学科，跳过
       SubjectType? subjectType = stringToSubType[(tableToCorrect
@@ -112,32 +100,34 @@ Future initInfoFromExcel() async {
               .split(' ')
               .toList());
 
-// 将老师加入数据库
-      await Global.database.addTeacher(
-          name: (tableToCorrect.cell(CellIndex.indexByString('G$i')).value
-                  as SharedString)
-              .toString());
-      int courseId = await Global.database.addCourse(
-        date: courseMoudle.date,
-        dayOfWeek: courseMoudle.dayOfWeek,
-        beginTime: courseMoudle.beginTime ?? '',
-        hour: courseMoudle.hour,
-        subject: subTypeToString[courseMoudle.subject]!,
-        courseType: courseTypeToString[courseMoudle.courseType]!,
-        teacher: courseMoudle.teacher,
-        grade: courseMoudle.grade,
-      );
-      //将学生加入数据库
-      for (int i = 0; i < 6; i++) {
-        //每个年级的学生集合
-        for (String studentName in stuStringOfGrades[i]) {
-          database.addStudent(studentName, gradeIndexToGrade[i]!);
-          database.addStudentCourse(
-              studentName: studentName, registGrade: i + 7, courseId: courseId);
-        }
-      }
+      await Global.database.transaction(() async {
+        // 将老师加入数据库
+        await Global.database.addTeacher(
+            name: (tableToCorrect.cell(CellIndex.indexByString('G$i')).value
+                    as SharedString)
+                .toString());
+        //课程加入数据库
+        int courseId = await Global.database.addCourse(
+          date: courseMoudle.date,
+          dayOfWeek: courseMoudle.dayOfWeek,
+          beginTime: courseMoudle.beginTime ?? '',
+          hour: courseMoudle.hour,
+          subject: subTypeToString[courseMoudle.subject]!,
+          courseType: courseTypeToString[courseMoudle.courseType]!,
+          teacher: courseMoudle.teacher,
+          grade: courseMoudle.grade,
+        );
 
-      // Global.database.insertStudentCourse(stuName: stu, grade: grade, id: id)
+        for (String studentName in studentNames) {
+          await database.addStudent(studentName, grade);
+
+          // (await database.findCoursesByName(subTypeToString[subjectType]!));
+          await database.addStudentCourse(
+              studentName: studentName,
+              registGrade: gradeToInt[grade]!,
+              courseId: courseId);
+        }
+      });
     } // while
   }
 }

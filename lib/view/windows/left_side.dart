@@ -10,9 +10,9 @@ import 'package:flutter/material.dart';
 
 class LeftSide extends StatefulWidget {
   final List<Moudle> moudleList;
-  final Function(Moudle) cardOnTap;
+  final Function(List<Moudle> moudle) cardOnTap;
   const LeftSide(
-      {super.key, required this.cardOnTap, this.moudleList = const []});
+      {super.key, required this.cardOnTap, required this.moudleList});
 
   @override
   State<StatefulWidget> createState() => _LeftSideState();
@@ -75,6 +75,7 @@ showAllCourses() async {}
 // 名称卡片
 Widget _nameCard(Moudle moudle, Function onTap) {
   Widget? card;
+  Function func = () {};
   if (moudle is StudentModule) {
     // onTap = () => Global.database.findCoursesByStudent(
     //     moudle.name, moudle.registGrade, moudle.registYear);
@@ -91,6 +92,13 @@ Widget _nameCard(Moudle moudle, Function onTap) {
       ),
       Text("${gradeToInt[moudle.registGrade]!}")
     ]);
+    func = () async {
+      List<Moudle> list = (await Global.database.findCoursesByStudent(
+              moudle.name, moudle.registGrade, moudle.registYear))
+          .map((e) => CourseMoudle.fromDatabase(e))
+          .toList();
+      return list;
+    };
   } else if (moudle is CourseMoudle) {
     card = Row(
       children: [
@@ -100,10 +108,13 @@ Widget _nameCard(Moudle moudle, Function onTap) {
         Text(courseTypeToString[moudle.courseType]!)
       ],
     );
-    // onTap = () {};
   }
   return InkWell(
-    onTap: () => onTap(moudle),
+    // 点击事件：点击左侧卡片后查询对应数据，提升至父组件刷新后传递至兄弟组件
+    onTap: () async {
+      List<Moudle> list = await func() ?? [];
+      onTap(list);
+    },
     child: Container(
         width: 195,
         height: 55,

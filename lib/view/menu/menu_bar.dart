@@ -3,14 +3,17 @@ import 'package:bt_system/excel/init_info.dart';
 import 'package:bt_system/exception/database_exception.dart';
 import 'package:bt_system/global.dart';
 import 'package:bt_system/module/class_module.dart';
+import 'package:bt_system/module/module_template.dart';
 import 'package:bt_system/module/stu_module.dart';
+import 'package:bt_system/module/teacher_module.dart';
 import 'package:flutter/material.dart';
 import 'package:pluto_menu_bar/pluto_menu_bar.dart';
 
 class BTMenuBar extends StatefulWidget {
-  VoidCallback showAllCourses;
-  BTMenuBar({super.key, required VoidCallback showAllCoures})
-      : showAllCourses = showAllCoures;
+  // VoidCallback showAllCourses;
+  Function(List<Moudle>) onTap;
+  BTMenuBar({super.key, required this.onTap});
+  // : showAllCourses = showAllCoures;
 
   @override
   State<BTMenuBar> createState() => _BTMenuBarState();
@@ -20,8 +23,9 @@ class _BTMenuBarState extends State<BTMenuBar> {
   // 初始化菜单列表
   late final List<PlutoMenuItem> whiteHoverMenus;
   late bool dataBaseHasInit;
-  late List<CourseMoudle> courseMoudles;
-  late List<StudentModule> students;
+  List<CourseMoudle>? courseMoudles;
+  List<StudentModule>? students;
+  List<TeacherModule>? teachers;
   @override
   void initState() {
     super.initState();
@@ -38,17 +42,13 @@ class _BTMenuBarState extends State<BTMenuBar> {
         children: [
           PlutoMenuItem(title: '初始化', onTap: initStudentInfoFromTable),
           // 如果数据库未初始化，需要初始化再添加
-          PlutoMenuItem(
-              title: '添加学生',
-              onTap: () {
-                setState(() {});
-              }),
+          PlutoMenuItem(title: '添加学生', onTap: () {}),
           PlutoMenuItem(
               title: '查看现有学生',
               enable: dataBaseHasInit,
               onTap: () async {
                 await showAllStudents();
-                setState(() {});
+                widget.onTap(students as List<Moudle>);
               }),
           PlutoMenuItem(
               title: '清除所有学生',
@@ -69,7 +69,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
               print(e);
             }
 
-            for (var course in courseMoudles) {
+            for (var course in courseMoudles ?? []) {
               print(course.courseType);
             }
           },
@@ -77,7 +77,8 @@ class _BTMenuBarState extends State<BTMenuBar> {
         PlutoMenuItem(
           title: '清空课程',
           onTap: () async {
-            Global.database.deleteAllCourses();
+            Future future = Global.database.deleteAllCourses();
+            future.then((value) => print('ok'));
           },
         ),
       ]),
@@ -109,12 +110,20 @@ class _BTMenuBarState extends State<BTMenuBar> {
           .map((e) => StudentModule.fromDatabase(e))
           .toList();
       setState(() {});
-      for (var stu in students) {
+      for (var stu in students ?? []) {
         print('${stu.name} ${stu.registGrade}');
       }
     } on TableNotExistException catch (e) {
       print(e.message);
     }
+  }
+
+  _findCourses(Moudle moudle) async {
+    StudentModule e = moudle as StudentModule;
+    (await Global.database
+            .findCoursesByStudent(e.name, e.registGrade, e.registYear))
+        .map((e) => CourseMoudle.fromDatabase(e))
+        .toList();
   }
 
   // 从一个表单初始化学生信息
