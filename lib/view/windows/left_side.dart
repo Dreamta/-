@@ -29,17 +29,9 @@ class _LeftSideState extends State<LeftSide> {
       child: Container(
           color: Colors.white,
           child:
-              // 这里可以添加您的菜单栏组件
+              //菜单栏组件
               Column(
             children: [
-              // Container(
-              //     height: 30,
-              //     decoration: const BoxDecoration(color: Colors.amber),
-              //     child: Container()
-              //     // BTMenuBar(
-              //     //   showAllCoures: shouwAllCourses,
-              //     // ),
-              //     ),
               Container(
                 height: 40,
                 child: const Padding(

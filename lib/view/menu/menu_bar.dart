@@ -24,7 +24,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
   late final List<PlutoMenuItem> whiteHoverMenus;
   late bool dataBaseHasInit;
   List<CourseMoudle>? courseMoudles;
-  List<StudentModule>? students;
+  // List<StudentModule>? students;
   List<TeacherModule>? teachers;
   @override
   void initState() {
@@ -40,15 +40,16 @@ class _BTMenuBarState extends State<BTMenuBar> {
         title: '学生',
         // 定义子菜单
         children: [
-          PlutoMenuItem(title: '初始化', onTap: initStudentInfoFromTable),
+          PlutoMenuItem(title: '初始化', onTap: _initStudentInfoFromTable),
           // 如果数据库未初始化，需要初始化再添加
           PlutoMenuItem(title: '添加学生', onTap: () {}),
           PlutoMenuItem(
               title: '查看现有学生',
               enable: dataBaseHasInit,
               onTap: () async {
-                await showAllStudents();
-                widget.onTap(students as List<Moudle>);
+                _showAllStudents();
+                // List<Moudle>? students = await _showAllStudents();
+                // widget.onTap(students as List<Moudle>);
               }),
           PlutoMenuItem(
               title: '清除所有学生',
@@ -60,18 +61,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
         PlutoMenuItem(
           title: '查看所有课程',
           onTap: () async {
-            try {
-              courseMoudles = (await Global.database.getAllCourses())
-                  .map((e) => CourseMoudle.fromDatabase(e))
-                  .toList();
-            } catch (e) {
-              // TODO:弹窗
-              print(e);
-            }
-
-            for (var course in courseMoudles ?? []) {
-              print(course.courseType);
-            }
+            _findAllCourses();
           },
         ),
         PlutoMenuItem(
@@ -104,30 +94,42 @@ class _BTMenuBarState extends State<BTMenuBar> {
   }
 
   // 返回所有学生信息
-  showAllStudents() async {
+  // Future<List<Moudle>?>
+  _showAllStudents() async {
+    List<StudentModule> students = [];
     try {
       students = (await Global.database.getAllStudents())
           .map((e) => StudentModule.fromDatabase(e))
           .toList();
-      setState(() {});
-      for (var stu in students ?? []) {
-        print('${stu.name} ${stu.registGrade}');
-      }
     } on TableNotExistException catch (e) {
       print(e.message);
     }
+    widget.onTap(students);
+
+    // return students;
   }
 
-  _findCourses(Moudle moudle) async {
-    StudentModule e = moudle as StudentModule;
-    (await Global.database
-            .findCoursesByStudent(e.name, e.registGrade, e.registYear))
-        .map((e) => CourseMoudle.fromDatabase(e))
-        .toList();
+  _findAllCourses() async {
+    List<CourseMoudle> courses = [];
+    try {
+      courses = (await Global.database.getAllCourses())
+          .map((e) => CourseMoudle.fromDatabase(e))
+          .toList();
+    } catch (e) {
+      print(e);
+    }
+    widget.onTap(courses);
   }
+
+  // _findCourses(StudentModule moudle) async {
+  //   (await Global.database.findCoursesByStudent(
+  //           moudle.name, moudle.registGrade, moudle.registYear))
+  //       .map((e) => CourseMoudle.fromDatabase(e))
+  //       .toList();
+  // }
 
   // 从一个表单初始化学生信息
-  initStudentInfoFromTable() async {
+  _initStudentInfoFromTable() async {
     try {
       await initInfoFromExcel();
       setState(() {

@@ -3,12 +3,18 @@ import 'package:bt_system/global.dart';
 import 'package:bt_system/module/class_module.dart';
 import 'package:bt_system/module/module_template.dart';
 import 'package:bt_system/module/stu_module.dart';
-import 'package:flutter/material.dart';
 
-class RightSide extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:path/path.dart';
+
+class RightSide extends StatefulWidget {
   List<Moudle>? list;
   RightSide({super.key, required this.list});
+  @override
+  State<StatefulWidget> createState() => _RightSideState();
+}
 
+class _RightSideState extends State<RightSide> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -26,7 +32,8 @@ class RightSide extends StatelessWidget {
           Expanded(
               child: SingleChildScrollView(
             child: Column(
-              children: list?.map((e) => _nameCard(e)).toList() ?? [],
+              children:
+                  widget.list?.map((e) => _nameCard(context, e)).toList() ?? [],
             ),
           )),
         ],
@@ -36,9 +43,10 @@ class RightSide extends StatelessWidget {
 }
 
 // 名称卡片
-Widget _nameCard(Moudle moudle) {
+Widget _nameCard(BuildContext context, Moudle moudle) {
   Widget? card;
   Function func = () {};
+  Widget dialogContent = Container();
   if (moudle is StudentModule) {
     // onTap = () => Global.database.findCoursesByStudent(
     //     moudle.name, moudle.registGrade, moudle.registYear);
@@ -75,8 +83,11 @@ Widget _nameCard(Moudle moudle) {
   return InkWell(
     // 点击事件：点击左侧卡片后查询对应数据，提升至父组件刷新后传递至兄弟组件
     onTap: () async {
-      // List<Moudle> list = await func() ?? [];
-      // onTap(list);
+      showDialog(
+          context: context,
+          builder: ((context) => Dialog(
+                child: dialogContent,
+              )));
     },
     child: Container(
         height: 55,

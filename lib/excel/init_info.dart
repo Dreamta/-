@@ -100,6 +100,7 @@ Future initInfoFromExcel() async {
               .split(' ')
               .toList());
 
+      // 使用事务块确保操作原子性
       await Global.database.transaction(() async {
         // 将老师加入数据库
         await Global.database.addTeacher(
@@ -121,7 +122,6 @@ Future initInfoFromExcel() async {
         for (String studentName in studentNames) {
           await database.addStudent(studentName, grade);
 
-          // (await database.findCoursesByName(subTypeToString[subjectType]!));
           await database.addStudentCourse(
               studentName: studentName,
               registGrade: gradeToInt[grade]!,
