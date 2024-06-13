@@ -18,69 +18,79 @@ class CustomWindow extends StatefulWidget {
 }
 
 class _CustomWindowState extends State<CustomWindow> {
-  // 应该允许为null,以区分没有找到数据（或在返回空列表时抛出异常）
-  // List<StudentModule>? students;
-  // List<CourseMoudle>? courses;
-  // List<TeacherModule>? teachers;
+  List<Moudle> _rightParam = [];
+  List<Moudle> _leftParam = [];
 
-  List<Moudle>? _rightParam;
-  List<Moudle>? _leftParam;
   @override
   Widget build(BuildContext context) {
-    // if (students != null) {
-    //   rightParam = students!;
-    //   rightParam = students!;
-    // } else if (courses != null) {
-    //   rightParam = courses!;
-    //   leftParam = students!;
-    // } else if (teachers != null) {
-    //   rightParam = teachers!;
-    //   leftParam = students!;
-    // }
     return Scaffold(
       body: WindowBorder(
         color: Colors.blueGrey,
         width: 1,
-        child: Row(
+        child: Column(
           children: [
-            Column(
+            Row(
               children: [
                 Container(
                   height: 30,
                   decoration: const BoxDecoration(color: Colors.amber),
                   child: BTMenuBar(
                     //传送一个列表进去接受数据，返回后刷新页面，判断列表内数据类型，若为空则弹窗提醒
-                    // showAllCoures: _showAllCourses,
-                    onTap: (List<Moudle> list) {
-                      _leftParam = list;
-                      // function();
+                    onTap: ({List<Moudle> moudles = const [], int site = 1}) {
+                      switch (site) {
+                        case 2:
+                          {
+                            _leftParam = [];
+                            _rightParam = moudles;
+                            break;
+                          }
+                        default:
+                          {
+                            _leftParam = moudles;
+                            _rightParam = [];
+                          }
+                      }
+
+                      /// 左边栏没有数据，右边栏也不应该有
+                      if (moudles.isEmpty) {
+                        _rightParam = [];
+                      }
                       setState(() {});
                     },
                   ),
                 ),
                 Expanded(
-                  child: LeftSide(
-                    cardOnTap: _refreshSelf,
-                    // cardOnTap: (moudle) => _findCourses(moudle),
-                    moudleList: _leftParam ?? [],
-                  ),
+                  child: Container(),
                 )
               ],
             ),
             Expanded(
-                child: RightSide(
-              list: _rightParam,
-            )),
+              child: Row(
+                children: [
+                  /// 左侧边栏
+                  LeftSide(
+                    cardOnTap: _refreshSelf,
+                    moudleList: _leftParam,
+                  ),
+
+                  /// 右侧边栏
+                  Expanded(
+                      child: RightSide(
+                    list: _rightParam,
+                  )),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  _refreshSelf(List<Moudle> list) {
-    _rightParam = list;
+  _refreshSelf({List<Moudle> moudles = const []}) {
+    _rightParam = moudles;
     setState(() {});
   }
 
-  _showAllCourses() async {}
+  // _showAllCourses() async {}
 }

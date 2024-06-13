@@ -10,10 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:pluto_menu_bar/pluto_menu_bar.dart';
 
 class BTMenuBar extends StatefulWidget {
-  // VoidCallback showAllCourses;
-  Function(List<Moudle>) onTap;
+  Function({List<Moudle> moudles, int site}) onTap;
   BTMenuBar({super.key, required this.onTap});
-  // : showAllCourses = showAllCoures;
 
   @override
   State<BTMenuBar> createState() => _BTMenuBarState();
@@ -23,9 +21,9 @@ class _BTMenuBarState extends State<BTMenuBar> {
   // 初始化菜单列表
   late final List<PlutoMenuItem> whiteHoverMenus;
   late bool dataBaseHasInit;
-  List<CourseMoudle>? courseMoudles;
-  // List<StudentModule>? students;
-  List<TeacherModule>? teachers;
+  // List<CourseMoudle>? courseMoudles;
+  //  List<StudentModule>? students;
+  // List<TeacherModule>? teachers;
   @override
   void initState() {
     super.initState();
@@ -48,13 +46,11 @@ class _BTMenuBarState extends State<BTMenuBar> {
               enable: dataBaseHasInit,
               onTap: () async {
                 _showAllStudents();
-                // List<Moudle>? students = await _showAllStudents();
-                // widget.onTap(students as List<Moudle>);
               }),
           PlutoMenuItem(
               title: '清除所有学生',
               enable: dataBaseHasInit,
-              onTap: deleteAllStudents)
+              onTap: _deleteAllStudents)
         ],
       ),
       PlutoMenuItem(title: '课程', children: [
@@ -76,7 +72,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
         PlutoMenuItem(
           title: '清空老师',
           onTap: () async {
-            // await Global.database.deleteAllTeachers();
+            await Global.database.deleteAllTeachers();
           },
         ),
       ]),
@@ -104,7 +100,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
     } on TableNotExistException catch (e) {
       print(e.message);
     }
-    widget.onTap(students);
+    widget.onTap(moudles: students);
 
     // return students;
   }
@@ -118,7 +114,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
     } catch (e) {
       print(e);
     }
-    widget.onTap(courses);
+    widget.onTap(moudles: courses, site: 2);
   }
 
   // _findCourses(StudentModule moudle) async {
@@ -142,7 +138,8 @@ class _BTMenuBarState extends State<BTMenuBar> {
   }
 
   /// 删除所有学生
-  deleteAllStudents() async {
-    Global.database.deleteAllStudents();
+  _deleteAllStudents() async {
+    await Global.database.deleteAllStudents();
+    widget.onTap();
   }
 }

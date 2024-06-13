@@ -1,6 +1,4 @@
 import 'package:bt_system/database/database.dart';
-import 'package:bt_system/excel/init_info.dart';
-// import 'package:bt_system/excel/init_info.dart';
 import 'package:bt_system/global.dart';
 import 'package:bt_system/module/module_template.dart';
 
@@ -30,10 +28,10 @@ class CourseMoudle extends Moudle {
   CourseMoudle.fromDatabase(Course course)
       : date = course.date,
         dayOfWeek = course.dayOfWeek,
-        beginTime = course.beginTime,
+        beginTime = course.beginTime == 'null' ? null : course.beginTime,
         hour = course.hour as double,
         subject = stringToSubType[course.subject]!,
         courseType = stringToCourseType[course.courseType]!,
         teacher = course.teacher,
-        grade = gradeIndexToGrade[course.grade - 7]!;
+        grade = intToGrade[course.grade]!;
 }

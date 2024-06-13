@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 
 class LeftSide extends StatefulWidget {
   final List<Moudle> moudleList;
-  final Function(List<Moudle> moudle) cardOnTap;
+  final Function({List<Moudle> moudles}) cardOnTap;
   const LeftSide(
       {super.key, required this.cardOnTap, required this.moudleList});
 
@@ -19,9 +19,14 @@ class LeftSide extends StatefulWidget {
 }
 
 class _LeftSideState extends State<LeftSide> {
-  // List<StudentModule>? students;
-  // List<TeacherModule>? teachers;
-  // List<CourseMoudle>? courses;
+  String textfieldContent = '';
+  @override
+  void initState() {
+    super.initState();
+    textfieldContent =
+        "搜索${widget.moudleList.isEmpty ? '' : _getMoudleType(widget.moudleList[0])}";
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -31,47 +36,48 @@ class _LeftSideState extends State<LeftSide> {
           child:
               //菜单栏组件
               Column(
+            // mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                height: 40,
-                child: const Padding(
-                  padding: EdgeInsets.all(3.0),
+              const Padding(
+                padding: EdgeInsets.all(3.0),
+                child: SizedBox(
+                  height: 40,
                   child: Row(children: [
-                    // Icon(IconData(codePoint)),
                     SizedBox(
                       width: 30,
                       child: Icon(Icons.access_alarm),
                     ),
                     Expanded(
                         child: TextField(
-                      decoration: InputDecoration(hintText: "搜索"),
+                      decoration: InputDecoration(hintText: '搜索'),
                     ))
                   ]),
                 ),
               ),
               Expanded(
-                  child: SingleChildScrollView(
-                child: Column(
-                    children: widget.moudleList
-                        .map((moudle) => _nameCard(moudle, widget.cardOnTap))
-                        .toList()),
-              ))
+                child: ListView.builder(
+                  itemCount: widget.moudleList.length,
+                  itemBuilder: (context, index) {
+                    return _nameCard(
+                        widget.moudleList[index], widget.cardOnTap);
+                  },
+                ),
+              )
             ],
           )),
     );
   }
 }
 
-showAllCourses() async {}
-
 // 名称卡片
 Widget _nameCard(Moudle moudle, Function onTap) {
   Widget? card;
+  // 用以返回数据列表提交回调函数刷新
   Function func = () {};
+
+  /// 学生卡片构造
   if (moudle is StudentModule) {
-    // onTap = () => Global.database.findCoursesByStudent(
-    //     moudle.name, moudle.registGrade, moudle.registYear);
-    card = Row(children: [
+    card = Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
       Padding(
         padding: const EdgeInsets.all(5),
         child: Text(
@@ -82,8 +88,9 @@ Widget _nameCard(Moudle moudle, Function onTap) {
           ),
         ),
       ),
-      Text("${gradeToInt[moudle.registGrade]!}")
+      Text(gradeToString[moudle.registGrade]!)
     ]);
+
     func = () async {
       List<Moudle> list = (await Global.database.findCoursesByStudent(
               moudle.name, moudle.registGrade, moudle.registYear))
@@ -91,6 +98,8 @@ Widget _nameCard(Moudle moudle, Function onTap) {
           .toList();
       return list;
     };
+
+    /// 课程卡片构造
   } else if (moudle is CourseMoudle) {
     card = Row(
       children: [
@@ -105,7 +114,7 @@ Widget _nameCard(Moudle moudle, Function onTap) {
     // 点击事件：点击左侧卡片后查询对应数据，提升至父组件刷新后传递至兄弟组件
     onTap: () async {
       List<Moudle> list = await func() ?? [];
-      onTap(list);
+      onTap(moudles: list);
     },
     child: Container(
         width: 195,
@@ -117,4 +126,16 @@ Widget _nameCard(Moudle moudle, Function onTap) {
             color: const Color.fromARGB(255, 244, 218, 165)),
         child: card ?? Container()),
   );
+}
+
+String _getMoudleType(Moudle moudle) {
+  String result = '';
+  if (moudle is StudentModule) {
+    result = '学生';
+  } else if (moudle is CourseMoudle) {
+    result = '课程';
+  } else if (moudle is TeacherModule) {
+    result = '老师';
+  }
+  return result;
 }

@@ -17,7 +17,7 @@ Future initInfoFromExcel() async {
     throw ExcelException(message: 'Excel为空');
   } else {
     while (
-        // 根据每行信息（一节课的信息录入）
+        // 根据每行信息（一节课的信息)录入
         tableToCorrect.cell(CellIndex.indexByString('A${++i}')).value != null) {
       //读取年级字段
       String? gradeString = ((tableToCorrect
@@ -70,6 +70,7 @@ Future initInfoFromExcel() async {
         print(e.message);
         continue;
       }
+      // 日期格式 xxxx-xx-xx
       String date = (tableToCorrect.cell(CellIndex.indexByString('A$i')).value
               as SharedString)
           .toString()

@@ -119,15 +119,6 @@ const Map<String, int> stringToGradeIndex = {
   '高三': 5,
 };
 
-const Map<int, GRADE> gradeIndexToGrade = {
-  0: GRADE.grade7,
-  1: GRADE.grade8,
-  2: GRADE.grade9,
-  3: GRADE.grade10,
-  4: GRADE.grade11,
-  5: GRADE.grade12,
-};
-
 const Map<String, GRADE> stringToGrade = {
   '初一': GRADE.grade7,
   '初二': GRADE.grade8,
@@ -135,6 +126,15 @@ const Map<String, GRADE> stringToGrade = {
   '高一': GRADE.grade10,
   '高二': GRADE.grade11,
   '高三': GRADE.grade12,
+};
+
+const Map<GRADE, String> gradeToString = {
+  GRADE.grade7: '初一',
+  GRADE.grade8: '初二',
+  GRADE.grade9: '初三',
+  GRADE.grade10: '高一',
+  GRADE.grade11: '高二',
+  GRADE.grade12: '高三'
 };
 
 //TODO: 年级要按年份自动增长

@@ -46,7 +46,7 @@ class _RightSideState extends State<RightSide> {
 Widget _nameCard(BuildContext context, Moudle moudle) {
   Widget? card;
   Function func = () {};
-  Widget dialogContent = Container();
+  late Widget dialogContent;
   if (moudle is StudentModule) {
     // onTap = () => Global.database.findCoursesByStudent(
     //     moudle.name, moudle.registGrade, moudle.registYear);
@@ -70,34 +70,65 @@ Widget _nameCard(BuildContext context, Moudle moudle) {
           .toList();
       return list;
     };
+
+    /// 右侧课程卡片
   } else if (moudle is CourseMoudle) {
     card = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Expanded(
+            flex: 4,
+            child: Center(child: Text(moudle.date.replaceAll("-", "/")))),
+        Expanded(flex: 2, child: Center(child: Text(moudle.dayOfWeek))),
+        Expanded(
+            flex: 3,
+            child:
+                Center(child: Text(moudle.beginTime?.substring(0, 5) ?? ''))),
+        Expanded(flex: 3, child: Center(child: Text("${moudle.hour}h"))),
+        Expanded(
+            flex: 3,
+            child: Center(child: Text(subTypeToString[moudle.subject]!))),
+        Expanded(
+            flex: 3,
+            child: Center(child: Text(courseTypeToString[moudle.courseType]!))),
+        Expanded(flex: 3, child: Center(child: Text(moudle.teacher))),
+        Expanded(
+            flex: 3, child: Center(child: Text(gradeToString[moudle.grade]!))),
+      ],
+    );
+    dialogContent = Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Text(moudle.date),
-        Text(moudle.teacher),
+        Text(moudle.dayOfWeek),
+        Text(moudle.beginTime ?? ''),
+        Text("${moudle.hour}h"),
         Text(subTypeToString[moudle.subject]!),
-        Text(courseTypeToString[moudle.courseType]!)
+        Text(courseTypeToString[moudle.courseType]!),
+        Text(moudle.teacher),
+        Text(gradeToString[moudle.grade]!),
       ],
     );
   }
   return InkWell(
-    // 点击事件：点击左侧卡片后查询对应数据，提升至父组件刷新后传递至兄弟组件
-    onTap: () async {
-      showDialog(
-          context: context,
-          builder: ((context) => Dialog(
-                child: dialogContent,
-              )));
-    },
-    child: Container(
-        height: 55,
-        margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            boxShadow: [BoxShadow(color: Colors.grey[100]!, blurRadius: 10)],
-            color: const Color.fromARGB(255, 244, 218, 165)),
-        child: card ?? Container()),
-  );
+
+      /// 点击事件：点击左侧卡片后查询对应数据，提升至父组件刷新后传递至兄弟组件
+      onTap: () async {
+        showDialog(
+            context: context,
+            builder: ((context) => Dialog(
+                  child: dialogContent,
+                )));
+      },
+      child: Container(
+          alignment: Alignment.center,
+          height: 55,
+          margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: [BoxShadow(color: Colors.grey[100]!, blurRadius: 10)],
+              color: const Color.fromARGB(255, 244, 218, 165)),
+          child: card ?? Container()));
 }
 
 // 右上角的窗口操作按钮
