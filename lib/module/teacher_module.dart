@@ -6,4 +6,10 @@ class TeacherModule extends Moudle {
   TeacherModule.createNewTeacher({required this.name});
 
   TeacherModule.fromDatabase(Teacher teacher) : name = teacher.name;
+
+  @override
+  String toString() {
+    //
+    return name;
+  }
 }

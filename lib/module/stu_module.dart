@@ -36,6 +36,11 @@ class StudentModule extends Moudle {
   Set<CourseMoudle> getCourses() {
     return _courses;
   }
+
+  @override
+  String toString() {
+    return '${name}';
+  }
 }
 
 // const Map<String, GRADE> stringToGrade = {

@@ -1,1 +1,4 @@
-class Moudle {}
+class Moudle {
+  @override
+  String toString();
+}

@@ -1,5 +1,8 @@
 import 'package:bt_system/cache.dart';
 import 'package:bt_system/database/database.dart';
+import 'package:bt_system/module/module_template.dart';
+
+import 'package:lpinyin/lpinyin.dart';
 
 class Global {
   static late final MyDatabase database;
@@ -21,6 +24,26 @@ class Global {
   static int caculateStudyYear() {
     // 如果是九月以后则学年加 1
     return DateTime.now().year + DateTime.now().month > 8 ? 1 : 0;
+  }
+
+// 模糊搜索
+  static List<Moudle> fuzzySearch(String value, List<Moudle> list) {
+    List<Moudle> result = [];
+    String query = PinyinHelper.getPinyin(value).replaceAll(' ', '');
+    if (list.isNotEmpty) {
+      // ignore: avoid_function_literals_in_foreach_calls
+      list.forEach((e) {
+        if (PinyinHelper.getPinyin(e.toString())
+            .replaceAll(' ', '')
+            .contains(query)) {
+          result.add(e);
+        }
+      });
+    } else {}
+
+    //
+
+    return result;
   }
 }
 

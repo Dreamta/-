@@ -14,7 +14,6 @@ class CourseMoudle extends Moudle {
   String teacher;
   GRADE grade; //初一到高一是7-12
 
-  // late List<String> ;
   Future<List<StudentModule>> get students async {
     List<Student> students = await Global.database.findStudentsByCourse(id);
     return students.map((e) => StudentModule.fromDatabase(e)).toList();

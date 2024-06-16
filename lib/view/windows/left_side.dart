@@ -7,12 +7,12 @@ import 'package:bt_system/module/stu_module.dart';
 import 'package:bt_system/module/teacher_module.dart';
 import 'package:bt_system/view/menu/menu_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:lpinyin/lpinyin.dart';
 
 class LeftSide extends StatefulWidget {
-  final List<Moudle> moudleList;
+  List<Moudle> moudleList;
   final Function({List<Moudle> moudles}) cardOnTap;
-  const LeftSide(
-      {super.key, required this.cardOnTap, required this.moudleList});
+  LeftSide({super.key, required this.cardOnTap, required this.moudleList});
 
   @override
   State<StatefulWidget> createState() => _LeftSideState();
@@ -20,10 +20,21 @@ class LeftSide extends StatefulWidget {
 
 class _LeftSideState extends State<LeftSide> {
   String textfieldContent = '';
+  List<Moudle> dataList = [];
+  List<Moudle> list1 = [];
+  TextEditingController _controller = TextEditingController();
   @override
   void initState() {
     super.initState();
-    textfieldContent = "在${_getMoudleType(widget.moudleList[0])}搜索";
+    textfieldContent =
+        "在${widget.moudleList.isEmpty ? '全部' : _getMoudleType(widget.moudleList[0])}搜索";
+    dataList = List.from(widget.moudleList);
+  }
+
+  @override
+  void didUpdateWidget(covariant LeftSide oldWidget) {
+    dataList = widget.moudleList;
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -39,66 +50,81 @@ class _LeftSideState extends State<LeftSide> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(3.0),
-                child: widget.moudleList.isEmpty
-                    ? Container()
-                    : SizedBox(
-                        height: 40,
-                        child: GestureDetector(
-                          onTap: () => showDialog(
-                            context: context,
-                            builder: (context) => Padding(
-                              padding: const EdgeInsets.only(bottom: 150),
-                              child: Dialog(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(20, 2, 30, 0),
-                                  child: SizedBox(
-                                    height: 50,
-                                    width: 500,
-                                    child: TextField(
-                                      onChanged: (value) {},
-                                      decoration: InputDecoration(
-                                          icon: const Padding(
-                                            padding: EdgeInsets.only(top: 5.0),
-                                            child: Icon(Icons.search_rounded),
-                                          ),
-                                          border: InputBorder.none,
-                                          hintText:
-                                              "在${_getMoudleType(widget.moudleList[0])}中搜索"),
-                                      autofocus: true,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                child: SizedBox(
+                  height: 40,
+                  child: GestureDetector(
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (context) => _searchTextField(),
+                    ),
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                          icon: const Padding(
+                            padding: EdgeInsets.only(top: 10),
+                            child: Icon(Icons.search_outlined),
                           ),
-                          child: TextField(
-                            decoration: InputDecoration(
-                                icon: const Padding(
-                                  padding: EdgeInsets.only(top: 10),
-                                  child: Icon(Icons.search_outlined),
-                                ),
-                                hintText:
-                                    "在${_getMoudleType(widget.moudleList[0])}中搜索",
-                                enabled: false),
-                          ),
-                        ),
-                      ),
+                          hintText:
+                              "在${widget.moudleList.isEmpty ? '全部' : _getMoudleType(widget.moudleList[0])}中搜索",
+                          enabled: false),
+                    ),
+                  ),
+                ),
               ),
               Expanded(
                 child: ListView.builder(
-                  itemCount: widget.moudleList.length,
+                  itemCount: dataList.length,
                   itemBuilder: (context, index) {
-                    return _nameCard(
-                        widget.moudleList[index], widget.cardOnTap);
+                    return _nameCard(dataList[index], widget.cardOnTap);
                   },
                 ),
               )
             ],
           )),
     );
+  }
+
+// 搜索框
+  Widget _searchTextField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 150),
+      child: Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 2, 30, 0),
+          child: SizedBox(
+            height: 50,
+            width: 500,
+            child: TextField(
+              onChanged: (value) {
+                _controller.text = value;
+                dataList = Global.fuzzySearch(value, widget.moudleList);
+                if (value == '') {
+                  dataList = widget.moudleList;
+                }
+                setState(() {});
+              },
+              decoration: InputDecoration(
+                  icon: const Padding(
+                    padding: EdgeInsets.only(top: 5.0),
+                    child: Icon(Icons.search_rounded),
+                  ),
+                  border: InputBorder.none,
+                  hintText:
+                      "在${widget.moudleList.isEmpty ? '全部' : _getMoudleType(widget.moudleList[0])}中搜索"),
+              autofocus: true,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    // 销毁控制器以防内存泄露
+    _controller.dispose();
+    super.dispose();
   }
 }
 
@@ -143,6 +169,7 @@ Widget _nameCard(Moudle moudle, Function onTap) {
     // 点击事件：点击左侧卡片后查询对应数据，提升至父组件刷新后传递至兄弟组件
     onTap: () async {
       List<Moudle> list = await func() ?? [];
+
       onTap(moudles: list);
     },
     child: Container(
