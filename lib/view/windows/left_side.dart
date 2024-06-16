@@ -23,36 +23,69 @@ class _LeftSideState extends State<LeftSide> {
   @override
   void initState() {
     super.initState();
-    textfieldContent =
-        "搜索${widget.moudleList.isEmpty ? '' : _getMoudleType(widget.moudleList[0])}";
+    textfieldContent = "在${_getMoudleType(widget.moudleList[0])}搜索";
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 200,
+      width: 170,
       child: Container(
           color: Colors.white,
           child:
-              //菜单栏组件
+
+              ///菜单栏组件
               Column(
-            // mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(3.0),
-                child: SizedBox(
-                  height: 40,
-                  child: Row(children: [
-                    SizedBox(
-                      width: 30,
-                      child: Icon(Icons.access_alarm),
-                    ),
-                    Expanded(
-                        child: TextField(
-                      decoration: InputDecoration(hintText: '搜索'),
-                    ))
-                  ]),
-                ),
+              Padding(
+                padding: const EdgeInsets.all(3.0),
+                child: widget.moudleList.isEmpty
+                    ? Container()
+                    : SizedBox(
+                        height: 40,
+                        child: GestureDetector(
+                          onTap: () => showDialog(
+                            context: context,
+                            builder: (context) => Padding(
+                              padding: const EdgeInsets.only(bottom: 150),
+                              child: Dialog(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(20, 2, 30, 0),
+                                  child: SizedBox(
+                                    height: 50,
+                                    width: 500,
+                                    child: TextField(
+                                      onChanged: (value) {},
+                                      decoration: InputDecoration(
+                                          icon: const Padding(
+                                            padding: EdgeInsets.only(top: 5.0),
+                                            child: Icon(Icons.search_rounded),
+                                          ),
+                                          border: InputBorder.none,
+                                          hintText:
+                                              "在${_getMoudleType(widget.moudleList[0])}中搜索"),
+                                      autofocus: true,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          child: TextField(
+                            decoration: InputDecoration(
+                                icon: const Padding(
+                                  padding: EdgeInsets.only(top: 10),
+                                  child: Icon(Icons.search_outlined),
+                                ),
+                                hintText:
+                                    "在${_getMoudleType(widget.moudleList[0])}中搜索",
+                                enabled: false),
+                          ),
+                        ),
+                      ),
               ),
               Expanded(
                 child: ListView.builder(
@@ -100,14 +133,10 @@ Widget _nameCard(Moudle moudle, Function onTap) {
     };
 
     /// 课程卡片构造
-  } else if (moudle is CourseMoudle) {
-    card = Row(
-      children: [
-        Text(moudle.date),
-        Text(moudle.teacher),
-        Text(subTypeToString[moudle.subject]!),
-        Text(courseTypeToString[moudle.courseType]!)
-      ],
+  } else if (moudle is TeacherModule) {
+    card = Text(
+      moudle.name,
+      style: const TextStyle(fontSize: 17),
     );
   }
   return InkWell(
@@ -124,7 +153,7 @@ Widget _nameCard(Moudle moudle, Function onTap) {
             borderRadius: BorderRadius.circular(5),
             boxShadow: [BoxShadow(color: Colors.grey[100]!, blurRadius: 10)],
             color: const Color.fromARGB(255, 244, 218, 165)),
-        child: card ?? Container()),
+        child: Center(child: card ?? Container())),
   );
 }
 

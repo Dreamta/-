@@ -1,8 +1,10 @@
 import 'package:bt_system/database/database.dart';
 import 'package:bt_system/global.dart';
 import 'package:bt_system/module/module_template.dart';
+import 'package:bt_system/module/stu_module.dart';
 
 class CourseMoudle extends Moudle {
+  int id;
   String date;
   String dayOfWeek;
   String? beginTime;
@@ -11,10 +13,16 @@ class CourseMoudle extends Moudle {
   CourseType courseType;
   String teacher;
   GRADE grade; //初一到高一是7-12
-  late List<String> studentNames;
+
+  // late List<String> ;
+  Future<List<StudentModule>> get students async {
+    List<Student> students = await Global.database.findStudentsByCourse(id);
+    return students.map((e) => StudentModule.fromDatabase(e)).toList();
+  }
 
   CourseMoudle.createNewCourse(
-      {required this.date,
+      {required this.id,
+      required this.date,
       required this.dayOfWeek,
       required this.beginTime,
       required this.hour,
@@ -22,11 +30,11 @@ class CourseMoudle extends Moudle {
       // 课程类型
       required this.courseType,
       required this.teacher,
-      required this.grade,
-      required this.studentNames});
+      required this.grade});
 
   CourseMoudle.fromDatabase(Course course)
-      : date = course.date,
+      : id = course.id,
+        date = course.date,
         dayOfWeek = course.dayOfWeek,
         beginTime = course.beginTime == 'null' ? null : course.beginTime,
         hour = course.hour as double,
@@ -34,4 +42,7 @@ class CourseMoudle extends Moudle {
         courseType = stringToCourseType[course.courseType]!,
         teacher = course.teacher,
         grade = intToGrade[course.grade]!;
+  // studentNames = Global.database
+  //     .findStudentsByCourse(course.id)
+  //     .then((value) => value.map((e) => e.name).toList());
 }

@@ -9,9 +9,9 @@ Future initInfoFromExcel() async {
   Excel? excel = await pickFile();
   Sheet? tableToCorrect = excel?.tables[excel.tables.keys.first];
   MyDatabase database = Global.database;
-  // 目前表从第八行开始有数据
+
+  /// 目前表从第八行开始有数据
   int i = 8;
-  // List<CourseMoudle> courses = [];
   if (tableToCorrect == null) {
     //TODO：
     throw ExcelException(message: 'Excel为空');
@@ -19,42 +19,43 @@ Future initInfoFromExcel() async {
     while (
         // 根据每行信息（一节课的信息)录入
         tableToCorrect.cell(CellIndex.indexByString('A${++i}')).value != null) {
-      //读取年级字段
-      String? gradeString = ((tableToCorrect
-              .cell(CellIndex.indexByString('H$i'))
-              .value) as SharedString)
-          .toString();
-      // 如年级中出现非法字符，跳过该行
-      if (stringToGradeIndex[gradeString] == null) {
-        continue;
-      }
-
-      List<String> studentNames = tableToCorrect
-          .cell(CellIndex.indexByString('I$i'))
-          .value
+      /// 日期格式 xxxx-xx-xx
+      String date = (tableToCorrect.cell(CellIndex.indexByString('A$i')).value
+              as SharedString)
           .toString()
-          .replaceAll('、', ' ')
-          .split(' ');
+          .substring(0, 10);
 
-      // 识别学科
+      /// 星期
+      String dayOfWeek = (tableToCorrect
+              .cell(CellIndex.indexByString('B$i'))
+              .value as SharedString)
+          .toString();
+
+      /// 时间
+      String beginTime =
+          (tableToCorrect.cell(CellIndex.indexByString('C$i')).value == null
+                  ? null
+                  : tableToCorrect.cell(CellIndex.indexByString('C$i')).value
+                      as SharedString)
+              .toString();
+
+      /// 小时
+      double hour =
+          (tableToCorrect.cell(CellIndex.indexByString('D$i')).value as num)
+              .toDouble();
+
+      /// 识别学科
       // 如果无法识别该行的学科，跳过
-      SubjectType? subjectType = stringToSubType[(tableToCorrect
+      SubjectType? subject = stringToSubType[(tableToCorrect
               .cell(CellIndex.indexByString('E$i'))
               .value as SharedString)
           .toString()];
-      if (subjectType == null) {
+      if (subject == null) {
         //TODO:干点啥
         continue;
       }
-      // 如果无法识别该行的年级，跳过
-      GRADE? grade = stringToGrade[(tableToCorrect
-              .cell(CellIndex.indexByString('H$i'))
-              .value as SharedString)
-          .toString()];
-      if (grade == null) {
-        continue;
-      }
-      // 识别课程类型
+
+      /// 课程类型
       //TODO: 如果无法识别课程类型需要报错
       CourseType? courseType;
       try {
@@ -70,36 +71,51 @@ Future initInfoFromExcel() async {
         print(e.message);
         continue;
       }
-      // 日期格式 xxxx-xx-xx
-      String date = (tableToCorrect.cell(CellIndex.indexByString('A$i')).value
-              as SharedString)
+
+      /// 老师
+      String teacher = (tableToCorrect
+              .cell(CellIndex.indexByString('G$i'))
+              .value as SharedString)
+          .toString();
+
+      /// 年级
+      // 如果无法识别该行的年级，跳过
+      GRADE? grade = stringToGrade[(tableToCorrect
+              .cell(CellIndex.indexByString('H$i'))
+              .value as SharedString)
+          .toString()];
+      if (grade == null) {
+        continue;
+      }
+
+      /// 提取学生名字用以添加学生表及关系表
+      List<String> studentNames = tableToCorrect
+          .cell(CellIndex.indexByString('I$i'))
+          .value
           .toString()
-          .substring(0, 10);
-      CourseMoudle courseMoudle = CourseMoudle.createNewCourse(
-          date: date,
-          dayOfWeek: (tableToCorrect.cell(CellIndex.indexByString('B$i')).value
-                  as SharedString)
-              .toString(),
-          beginTime:
-              (tableToCorrect.cell(CellIndex.indexByString('C$i')).value == null
-                      ? null
-                      : tableToCorrect.cell(CellIndex.indexByString('C$i')).value
-                          as SharedString)
-                  .toString(),
-          hour: (tableToCorrect.cell(CellIndex.indexByString('D$i')).value as num)
-              .toDouble(),
-          subject: subjectType,
-          courseType: courseType,
-          teacher: (tableToCorrect.cell(CellIndex.indexByString('G$i')).value
-                  as SharedString)
-              .toString(),
-          grade: grade,
-          studentNames: (tableToCorrect.cell(CellIndex.indexByString('I$i')).value
-                  as SharedString)
-              .toString()
-              .replaceAll('、', ' ')
-              .split(' ')
-              .toList());
+          .replaceAll('、', ' ')
+          .split(' ');
+      // CourseMoudle courseMoudle = CourseMoudle.createNewCourse(
+      //     date: date,
+      //     dayOfWeek: (tableToCorrect.cell(CellIndex.indexByString('B$i')).value
+      //             as SharedString)
+      //         .toString(),
+      //     beginTime:
+      //         (tableToCorrect.cell(CellIndex.indexByString('C$i')).value == null
+      //                 ? null
+      //                 : tableToCorrect
+      //                     .cell(CellIndex.indexByString('C$i'))
+      //                     .value as SharedString)
+      //             .toString(),
+      //     hour:
+      //         (tableToCorrect.cell(CellIndex.indexByString('D$i')).value as num)
+      //             .toDouble(),
+      //     subject: subjectType,
+      //     courseType: courseType,
+      //     teacher: (tableToCorrect.cell(CellIndex.indexByString('G$i')).value
+      //             as SharedString)
+      //         .toString(),
+      //     grade: grade);
 
       // 使用事务块确保操作原子性
       await Global.database.transaction(() async {
@@ -110,14 +126,14 @@ Future initInfoFromExcel() async {
                 .toString());
         //课程加入数据库
         int courseId = await Global.database.addCourse(
-          date: courseMoudle.date,
-          dayOfWeek: courseMoudle.dayOfWeek,
-          beginTime: courseMoudle.beginTime ?? '',
-          hour: courseMoudle.hour,
-          subject: subTypeToString[courseMoudle.subject]!,
-          courseType: courseTypeToString[courseMoudle.courseType]!,
-          teacher: courseMoudle.teacher,
-          grade: courseMoudle.grade,
+          date: date,
+          dayOfWeek: dayOfWeek,
+          beginTime: beginTime ?? '',
+          hour: hour,
+          subject: subTypeToString[subject]!,
+          courseType: courseTypeToString[courseType]!,
+          teacher: teacher,
+          grade: grade,
         );
 
         for (String studentName in studentNames) {

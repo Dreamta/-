@@ -96,19 +96,38 @@ Widget _nameCard(BuildContext context, Moudle moudle) {
             flex: 3, child: Center(child: Text(gradeToString[moudle.grade]!))),
       ],
     );
-    dialogContent = Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Text(moudle.date),
-        Text(moudle.dayOfWeek),
-        Text(moudle.beginTime ?? ''),
-        Text("${moudle.hour}h"),
-        Text(subTypeToString[moudle.subject]!),
-        Text(courseTypeToString[moudle.courseType]!),
-        Text(moudle.teacher),
-        Text(gradeToString[moudle.grade]!),
-      ],
-    );
+
+    dialogContent = FutureBuilder(
+        future: moudle.students,
+        builder: (BuildContext context,
+            AsyncSnapshot<List<StudentModule>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else {
+            String stuNames =
+                snapshot.data!.map((e) => e.name).toList().join(",");
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('日期：${moudle.date}'),
+                  Text('星期：${moudle.dayOfWeek}'),
+                  Text('时间：${moudle.beginTime ?? '未填写'}'),
+                  Text("小时：${moudle.hour}h"),
+                  Text('科目：${subTypeToString[moudle.subject]!}'),
+                  Text('课类：${courseTypeToString[moudle.courseType]!}'),
+                  Text('老师：${moudle.teacher}'),
+                  Text('年级：${gradeToString[moudle.grade]!}'),
+                  Text(
+                    '学员：${stuNames}',
+                  )
+                ],
+              ),
+            );
+          }
+        });
   }
   return InkWell(
 

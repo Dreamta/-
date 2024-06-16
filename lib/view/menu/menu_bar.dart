@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:pluto_menu_bar/pluto_menu_bar.dart';
 
 class BTMenuBar extends StatefulWidget {
+  /// moudles:选择要刷新出的列表数据，site：选择要显示在左侧栏还是右侧栏
   Function({List<Moudle> moudles, int site}) onTap;
   BTMenuBar({super.key, required this.onTap});
 
@@ -21,9 +22,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
   // 初始化菜单列表
   late final List<PlutoMenuItem> whiteHoverMenus;
   late bool dataBaseHasInit;
-  // List<CourseMoudle>? courseMoudles;
-  //  List<StudentModule>? students;
-  // List<TeacherModule>? teachers;
+
   @override
   void initState() {
     super.initState();
@@ -57,18 +56,24 @@ class _BTMenuBarState extends State<BTMenuBar> {
         PlutoMenuItem(
           title: '查看所有课程',
           onTap: () async {
-            _findAllCourses();
+            await _findAllCourses();
           },
         ),
         PlutoMenuItem(
           title: '清空课程',
           onTap: () async {
             Future future = Global.database.deleteAllCourses();
-            future.then((value) => print('ok'));
+            // future.then((value) => print('ok'));
           },
         ),
       ]),
       PlutoMenuItem(title: '老师', children: [
+        PlutoMenuItem(
+          title: '查看老师',
+          onTap: () async {
+            await _showAllTeachers();
+          },
+        ),
         PlutoMenuItem(
           title: '清空老师',
           onTap: () async {
@@ -82,7 +87,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-        width: 200,
+        width: 170,
         child: PlutoMenuBar(
           mode: PlutoMenuBarMode.tap,
           menus: _makeMenus(context),
@@ -90,8 +95,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
   }
 
   // 返回所有学生信息
-  // Future<List<Moudle>?>
-  _showAllStudents() async {
+  Future _showAllStudents() async {
     List<StudentModule> students = [];
     try {
       students = (await Global.database.getAllStudents())
@@ -101,8 +105,19 @@ class _BTMenuBarState extends State<BTMenuBar> {
       print(e.message);
     }
     widget.onTap(moudles: students);
+  }
 
-    // return students;
+  Future _showAllTeachers() async {
+    List<TeacherModule> teachers = [];
+    try {
+      teachers = (await Global.database.getAllTeachers())
+          .map((e) => TeacherModule.fromDatabase(e))
+          .toList();
+    } catch (e) {
+      print(e);
+    }
+
+    widget.onTap(moudles: teachers);
   }
 
   _findAllCourses() async {

@@ -21,6 +21,7 @@ class _CustomWindowState extends State<CustomWindow> {
   List<Moudle> _rightParam = [];
   List<Moudle> _leftParam = [];
 
+  int mode = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,6 +38,7 @@ class _CustomWindowState extends State<CustomWindow> {
                   child: BTMenuBar(
                     //传送一个列表进去接受数据，返回后刷新页面，判断列表内数据类型，若为空则弹窗提醒
                     onTap: ({List<Moudle> moudles = const [], int site = 1}) {
+                      mode = site;
                       switch (site) {
                         case 2:
                           {
@@ -60,7 +62,31 @@ class _CustomWindowState extends State<CustomWindow> {
                   ),
                 ),
                 Expanded(
-                  child: Container(),
+                  child: 2 == mode
+                      ? const SizedBox(
+                          height: 30,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  flex: 4, child: Center(child: Text('日期'))),
+                              Expanded(
+                                  flex: 2, child: Center(child: Text('星期'))),
+                              Expanded(
+                                  flex: 3, child: Center(child: Text('时间'))),
+                              Expanded(
+                                  flex: 3, child: Center(child: Text('小时'))),
+                              Expanded(
+                                  flex: 3, child: Center(child: Text('科目'))),
+                              Expanded(
+                                  flex: 3, child: Center(child: Text('课类'))),
+                              Expanded(
+                                  flex: 3, child: Center(child: Text('老师'))),
+                              Expanded(
+                                  flex: 3, child: Center(child: Text('年级'))),
+                            ],
+                          ),
+                        )
+                      : Container(),
                 )
               ],
             ),

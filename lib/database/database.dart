@@ -154,13 +154,27 @@ class MyDatabase extends _$MyDatabase {
 
   // 查找某课程的所有学生
   Future<List<Student>> findStudentsByCourse(int courseId) async {
-    return await (select(students)
-          ..where((student) => student.name.isInQuery(
-                select(studentCourses)
-                  ..where((tbl) => tbl.courseId.equals(courseId))
-                  ..map((row) => row.studentName),
-              )))
-        .get();
+    List<Student> stus = [];
+
+    /// 查询所有学生的该课程记录
+    final query = select(studentCourses)
+      ..where((tbl) => tbl.courseId.equals(courseId));
+    final List<Student_Course> result = await query.get();
+
+    /// 在学生表中查找对应的学生
+    for (Student_Course sc in result) {
+      final query = select(students)
+        ..where((stu) =>
+            stu.name.equals(sc.studentName) &
+            stu.registGrade.equals(sc.registGrade) &
+            stu.registYear.equals(sc.registYear));
+      final Student? stu = await query.getSingleOrNull();
+      if (stu == null) {
+        continue;
+      }
+      stus.add(stu);
+    }
+    return stus;
   }
 
   // 根据课程名字查找课程
