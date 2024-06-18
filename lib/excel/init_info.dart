@@ -13,7 +13,6 @@ Future initInfoFromExcel() async {
   /// 目前表从第八行开始有数据
   int i = 8;
   if (tableToCorrect == null) {
-    //TODO：
     throw ExcelException(message: 'Excel为空');
   } else {
     while (
@@ -38,6 +37,13 @@ Future initInfoFromExcel() async {
                   : tableToCorrect.cell(CellIndex.indexByString('C$i')).value
                       as SharedString)
               .toString();
+      // 处理时间误差
+      if (beginTime != 'null' && beginTime[7] == '9') {
+        beginTime = DateTime.parse("1970-01-01T$beginTime")
+            .add(const Duration(seconds: 1))
+            .toString()
+            .substring(11, 19);
+      }
 
       /// 小时
       double hour =
@@ -128,7 +134,7 @@ Future initInfoFromExcel() async {
         int courseId = await Global.database.addCourse(
           date: date,
           dayOfWeek: dayOfWeek,
-          beginTime: beginTime ?? '',
+          beginTime: beginTime,
           hour: hour,
           subject: subTypeToString[subject]!,
           courseType: courseTypeToString[courseType]!,

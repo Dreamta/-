@@ -1,6 +1,7 @@
 import 'package:bt_system/cache.dart';
 import 'package:bt_system/database/database.dart';
 import 'package:bt_system/module/module_template.dart';
+import 'package:flutter/material.dart';
 
 import 'package:lpinyin/lpinyin.dart';
 
@@ -21,9 +22,10 @@ class Global {
     // database.
   }
 
+// 学年计算
   static int caculateStudyYear() {
     // 如果是九月以后则学年加 1
-    return DateTime.now().year + DateTime.now().month > 8 ? 1 : 0;
+    return DateTime.now().year + (DateTime.now().month > 8 ? 1 : 0);
   }
 
 // 模糊搜索
@@ -44,6 +46,37 @@ class Global {
     //
 
     return result;
+  }
+
+// 等待框
+  static Future<void> showLoadingDialog<T>(
+      BuildContext context, Future<T> Function() asyncOperation) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 16),
+                Text("Loading..."),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    try {
+      await asyncOperation();
+    } finally {
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pop(); // 关闭对话框
+    }
   }
 }
 

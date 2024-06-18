@@ -125,6 +125,27 @@ class MyDatabase extends _$MyDatabase {
     return await query.get();
   }
 
+// 根据ID查找课程
+  Future<Course?> findCourseById(int id) async {
+    return await (select(courses)..where((tbl) => tbl.id.equals(id)))
+        .getSingleOrNull();
+  }
+
+// 查找学生的上课记录（学生-课程关系）
+  Future<Student_Course> findStudentCourse(
+      {required String stuName,
+      required GRADE registGrade,
+      required int registYear,
+      required int courseId}) async {
+    List list = (await (select(studentCourses)
+          ..where((tbl) =>
+              tbl.studentName.equals(stuName) &
+              tbl.registGrade.equals(gradeToInt[registGrade]!) &
+              tbl.registYear.equals(registYear)))
+        .get());
+    return list.first;
+  }
+
 // 查找某学生上过的所有课程
   Future<List<Course>> findCoursesByStudent(
       String name, GRADE registGrade, int registYear) async {

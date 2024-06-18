@@ -11,8 +11,8 @@ import 'package:pluto_menu_bar/pluto_menu_bar.dart';
 
 class BTMenuBar extends StatefulWidget {
   /// moudles:选择要刷新出的列表数据，site：选择要显示在左侧栏还是右侧栏
-  Function({List<Moudle> moudles, int site}) onTap;
-  BTMenuBar({super.key, required this.onTap});
+  final Function({List<Moudle> moudles, int site}) onTap;
+  const BTMenuBar({super.key, required this.onTap});
 
   @override
   State<BTMenuBar> createState() => _BTMenuBarState();
@@ -36,8 +36,10 @@ class _BTMenuBarState extends State<BTMenuBar> {
       PlutoMenuItem(
         title: '学生',
         // 定义子菜单
+
         children: [
           PlutoMenuItem(title: '初始化', onTap: _initStudentInfoFromTable),
+          PlutoMenuItem.divider(height: 1),
           // 如果数据库未初始化，需要初始化再添加
           PlutoMenuItem(title: '添加学生', onTap: () {}),
           PlutoMenuItem(
@@ -60,10 +62,20 @@ class _BTMenuBarState extends State<BTMenuBar> {
           },
         ),
         PlutoMenuItem(
+          title: '查看课程',
+          onTap: () async {
+            // 7418 12 2024 刘博文
+            await Global.database.findStudentCourse(
+                stuName: '刘博文',
+                registGrade: GRADE.grade12,
+                registYear: 2024,
+                courseId: 7418);
+          },
+        ),
+        PlutoMenuItem(
           title: '清空课程',
           onTap: () async {
             Future future = Global.database.deleteAllCourses();
-            // future.then((value) => print('ok'));
           },
         ),
       ]),
@@ -89,7 +101,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
     return SizedBox(
         width: 170,
         child: PlutoMenuBar(
-          mode: PlutoMenuBarMode.tap,
+          mode: PlutoMenuBarMode.hover,
           menus: _makeMenus(context),
         ));
   }
@@ -140,9 +152,10 @@ class _BTMenuBarState extends State<BTMenuBar> {
   // }
 
   // 从一个表单初始化学生信息
-  _initStudentInfoFromTable() async {
+  void _initStudentInfoFromTable() async {
     try {
-      await initInfoFromExcel();
+      Global.showLoadingDialog(context, initInfoFromExcel);
+
       setState(() {
         dataBaseHasInit = true;
       });
@@ -154,7 +167,8 @@ class _BTMenuBarState extends State<BTMenuBar> {
 
   /// 删除所有学生
   _deleteAllStudents() async {
-    await Global.database.deleteAllStudents();
+    Global.showLoadingDialog(context, Global.database.deleteAllStudents);
+
     widget.onTap();
   }
 }

@@ -20,7 +20,7 @@ class CustomWindow extends StatefulWidget {
 class _CustomWindowState extends State<CustomWindow> {
   List<Moudle> _rightParam = [];
   List<Moudle> _leftParam = [];
-
+  Moudle? rightListOwner;
   int mode = 0;
   @override
   Widget build(BuildContext context) {
@@ -103,6 +103,7 @@ class _CustomWindowState extends State<CustomWindow> {
                   Expanded(
                       child: RightSide(
                     list: _rightParam,
+                    listOwner: _leftParam.isEmpty ? null : rightListOwner,
                   )),
                 ],
               ),
@@ -113,8 +114,9 @@ class _CustomWindowState extends State<CustomWindow> {
     );
   }
 
-  _refreshSelf({List<Moudle> moudles = const []}) {
+  _refreshSelf({List<Moudle> moudles = const [], required Moudle owner}) {
     _rightParam = moudles;
+    rightListOwner = owner;
     setState(() {});
   }
 

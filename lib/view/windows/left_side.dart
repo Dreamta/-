@@ -11,7 +11,9 @@ import 'package:lpinyin/lpinyin.dart';
 
 class LeftSide extends StatefulWidget {
   List<Moudle> moudleList;
-  final Function({List<Moudle> moudles}) cardOnTap;
+
+  /// 当向右侧传递数据时需要传递是数据拥有者
+  final Function({List<Moudle> moudles, required Moudle owner}) cardOnTap;
   LeftSide({super.key, required this.cardOnTap, required this.moudleList});
 
   @override
@@ -158,8 +160,11 @@ Widget _nameCard(Moudle moudle, Function onTap) {
       return list;
     };
 
-    /// 课程卡片构造
-  } else if (moudle is TeacherModule) {
+    /// 老师卡片构造
+  }
+
+  /// 老师卡片构造
+  else if (moudle is TeacherModule) {
     card = Text(
       moudle.name,
       style: const TextStyle(fontSize: 17),
@@ -170,7 +175,7 @@ Widget _nameCard(Moudle moudle, Function onTap) {
     onTap: () async {
       List<Moudle> list = await func() ?? [];
 
-      onTap(moudles: list);
+      onTap(moudles: list, owner: moudle);
     },
     child: Container(
         width: 195,
