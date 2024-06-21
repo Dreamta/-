@@ -25,6 +25,7 @@ class _LeftSideState extends State<LeftSide> {
   List<Moudle> dataList = [];
   List<Moudle> list1 = [];
   TextEditingController _controller = TextEditingController();
+  int _selectCardIndex = -1;
   @override
   void initState() {
     super.initState();
@@ -35,7 +36,7 @@ class _LeftSideState extends State<LeftSide> {
 
   @override
   void didUpdateWidget(covariant LeftSide oldWidget) {
-    dataList = widget.moudleList;
+    // dataList = widget.moudleList;
     super.didUpdateWidget(oldWidget);
   }
 
@@ -77,7 +78,20 @@ class _LeftSideState extends State<LeftSide> {
                 child: ListView.builder(
                   itemCount: dataList.length,
                   itemBuilder: (context, index) {
-                    return _nameCard(dataList[index], widget.cardOnTap);
+                    return NameCard(
+                      moudle: dataList[index],
+                      onTap: (
+                          {List<Moudle> moudles = const [],
+                          required Moudle owner}) {
+                        setState(() {
+                          _selectCardIndex = index;
+                        });
+                        widget.cardOnTap(moudles: moudles, owner: owner);
+                      },
+                      isSelected: _selectCardIndex == index,
+                    );
+                    // return _nameCard(
+                    //     context, dataList[index], widget.cardOnTap);
                   },
                 ),
               )
@@ -130,11 +144,97 @@ class _LeftSideState extends State<LeftSide> {
   }
 }
 
+class NameCard extends StatefulWidget {
+  final Moudle moudle;
+  final Function({List<Moudle> moudles, required Moudle owner}) onTap;
+  final bool isSelected;
+  const NameCard(
+      {super.key,
+      required this.moudle,
+      required this.onTap,
+      required this.isSelected});
+
+  @override
+  State<StatefulWidget> createState() {
+    return _NameCardState();
+  }
+}
+
+class _NameCardState extends State<NameCard> {
+  Widget? card;
+
+  // 用以返回数据列表提交回调函数刷新
+  Function func = () {};
+  Color color = const Color.fromARGB(255, 244, 218, 165);
+
+  @override
+  Widget build(BuildContext context) {
+    func = () {};
+    color = widget.isSelected
+        ? const Color.fromARGB(255, 234, 192, 108)
+        : const Color.fromARGB(255, 244, 218, 165);
+
+    /// 学生卡片构造
+    if (widget.moudle is StudentModule) {
+      card = Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        Padding(
+          padding: const EdgeInsets.all(5),
+          child: Text(
+            (widget.moudle as StudentModule).name,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Text(gradeToString[(widget.moudle as StudentModule).registGrade]!)
+      ]);
+
+      func = () async {
+        List<Moudle> list = (await Global.database.findCoursesByStudent(
+                (widget.moudle as StudentModule).name,
+                (widget.moudle as StudentModule).registGrade,
+                (widget.moudle as StudentModule).registYear))
+            .map((e) => CourseMoudle.fromDatabase(e))
+            .toList();
+        return list;
+      };
+    }
+
+    /// 老师卡片构造
+    else if (widget.moudle is TeacherModule) {
+      card = Text(
+        (widget.moudle as TeacherModule).name,
+        style: const TextStyle(fontSize: 17),
+      );
+    }
+
+    return InkWell(
+      // 点击事件：点击左侧卡片后查询对应数据，提升至父组件刷新后传递至兄弟组件
+      onTap: () async {
+        List<Moudle> list = await func() ?? [];
+
+        widget.onTap(moudles: list, owner: widget.moudle);
+      },
+      child: Container(
+          width: 195,
+          height: 55,
+          margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: [BoxShadow(color: Colors.grey[100]!, blurRadius: 10)],
+              color: color),
+          child: Center(child: card ?? Container())),
+    );
+  }
+}
+
 // 名称卡片
-Widget _nameCard(Moudle moudle, Function onTap) {
+Widget _nameCard(BuildContext context, Moudle moudle, Function onTap) {
   Widget? card;
   // 用以返回数据列表提交回调函数刷新
   Function func = () {};
+  final Color _initialColor = const Color.fromARGB(255, 244, 218, 165);
 
   /// 学生卡片构造
   if (moudle is StudentModule) {
@@ -159,8 +259,6 @@ Widget _nameCard(Moudle moudle, Function onTap) {
           .toList();
       return list;
     };
-
-    /// 老师卡片构造
   }
 
   /// 老师卡片构造
@@ -170,23 +268,28 @@ Widget _nameCard(Moudle moudle, Function onTap) {
       style: const TextStyle(fontSize: 17),
     );
   }
-  return InkWell(
-    // 点击事件：点击左侧卡片后查询对应数据，提升至父组件刷新后传递至兄弟组件
-    onTap: () async {
-      List<Moudle> list = await func() ?? [];
-
-      onTap(moudles: list, owner: moudle);
-    },
-    child: Container(
-        width: 195,
-        height: 55,
-        margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            boxShadow: [BoxShadow(color: Colors.grey[100]!, blurRadius: 10)],
-            color: const Color.fromARGB(255, 244, 218, 165)),
-        child: Center(child: card ?? Container())),
-  );
+  Color color = _initialColor;
+  return StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+    return InkWell(
+      // 点击事件：点击左侧卡片后查询对应数据，提升至父组件刷新后传递至兄弟组件
+      onTap: () async {
+        List<Moudle> list = await func() ?? [];
+        setState(() {
+          color = Colors.blueAccent;
+        });
+        onTap(moudles: list, owner: moudle);
+      },
+      child: Container(
+          width: 195,
+          height: 55,
+          margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: [BoxShadow(color: Colors.grey[100]!, blurRadius: 10)],
+              color: color),
+          child: Center(child: card ?? Container())),
+    );
+  });
 }
 
 String _getMoudleType(Moudle moudle) {

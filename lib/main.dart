@@ -8,7 +8,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 void main() async {
   runApp(const BtSystem());
   doWhenWindowReady(() {
-    const initialSize = Size(670, 450); // 设置一个初始大小
+    const initialSize = Size(670, 700); // 设置一个初始大小
     appWindow.size = initialSize;
     appWindow.minSize = initialSize;
     appWindow.alignment = Alignment.center; // 可以设置窗口在屏幕中的位置

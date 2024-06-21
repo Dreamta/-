@@ -30,12 +30,11 @@ class _CustomWindowState extends State<CustomWindow> {
         width: 1,
         child: Column(
           children: [
-            Row(
-              children: [
-                Container(
-                  height: 30,
-                  decoration: const BoxDecoration(color: Colors.amber),
-                  child: BTMenuBar(
+            SizedBox(
+              height: 30,
+              child: Row(
+                children: [
+                  BTMenuBar(
                     //传送一个列表进去接受数据，返回后刷新页面，判断列表内数据类型，若为空则弹窗提醒
                     onTap: ({List<Moudle> moudles = const [], int site = 1}) {
                       mode = site;
@@ -60,35 +59,22 @@ class _CustomWindowState extends State<CustomWindow> {
                       setState(() {});
                     },
                   ),
-                ),
-                Expanded(
-                  child: 2 == mode
-                      ? const SizedBox(
-                          height: 30,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                  flex: 4, child: Center(child: Text('日期'))),
-                              Expanded(
-                                  flex: 2, child: Center(child: Text('星期'))),
-                              Expanded(
-                                  flex: 3, child: Center(child: Text('时间'))),
-                              Expanded(
-                                  flex: 3, child: Center(child: Text('小时'))),
-                              Expanded(
-                                  flex: 3, child: Center(child: Text('科目'))),
-                              Expanded(
-                                  flex: 3, child: Center(child: Text('课类'))),
-                              Expanded(
-                                  flex: 3, child: Center(child: Text('老师'))),
-                              Expanded(
-                                  flex: 3, child: Center(child: Text('年级'))),
-                            ],
-                          ),
-                        )
-                      : Container(),
-                )
-              ],
+                  Expanded(
+                    child: Container(),
+                  ),
+                  SizedBox(
+                    width: 90,
+                    child: WindowTitleBarBox(
+                      child: Row(
+                        children: [
+                          Expanded(child: MoveWindow()),
+                          WindowButtons(),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
             ),
             Expanded(
               child: Row(
