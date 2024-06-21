@@ -23,7 +23,7 @@ class LeftSide extends StatefulWidget {
 class _LeftSideState extends State<LeftSide> {
   String textfieldContent = '';
   List<Moudle> dataList = [];
-  List<Moudle> list1 = [];
+  List<Moudle> list = [];
   TextEditingController _controller = TextEditingController();
   int _selectCardIndex = -1;
   @override
@@ -36,7 +36,16 @@ class _LeftSideState extends State<LeftSide> {
 
   @override
   void didUpdateWidget(covariant LeftSide oldWidget) {
-    // dataList = widget.moudleList;
+    if (list != widget.moudleList) {
+      dataList = List.from(widget.moudleList);
+
+      /// 传递引用作为信号机制，
+      /// 当触发卡片的ontap事件后会调用父组件的setState函数，
+      /// 此时会重新构建 widget，但保留 state，所以会重新调用widget的构造函数并赋值，
+      /// 故 widget 数组引用会更新，与list引用不相等，以此作为更新的机制
+      list = widget.moudleList;
+    }
+
     super.didUpdateWidget(oldWidget);
   }
 
@@ -53,25 +62,50 @@ class _LeftSideState extends State<LeftSide> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(3.0),
-                child: SizedBox(
-                  height: 40,
-                  child: GestureDetector(
-                    onTap: () => showDialog(
-                      context: context,
-                      builder: (context) => _searchTextField(),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => showDialog(
+                          context: context,
+                          builder: (context) => _searchTextField(),
+                        ),
+                        child: TextField(
+                          controller: _controller,
+                          decoration: InputDecoration(
+                              icon: const Padding(
+                                padding: EdgeInsets.only(top: 10),
+                                child: Icon(Icons.search_outlined),
+                              ),
+                              hintText:
+                                  "在${widget.moudleList.isEmpty ? '全部' : _getMoudleType(widget.moudleList[0])}中搜索",
+                              enabled: false),
+                        ),
+                      ),
                     ),
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                          icon: const Padding(
-                            padding: EdgeInsets.only(top: 10),
-                            child: Icon(Icons.search_outlined),
-                          ),
-                          hintText:
-                              "在${widget.moudleList.isEmpty ? '全部' : _getMoudleType(widget.moudleList[0])}中搜索",
-                          enabled: false),
-                    ),
-                  ),
+                    _controller.text == ''
+                        ? Container()
+                        : Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: SizedBox(
+                              width: 30,
+                              height: 40,
+                              child: GestureDetector(
+                                onTap: () {
+                                  _controller.text = '';
+                                  setState(() {
+                                    dataList = widget.moudleList;
+                                    _selectCardIndex = -1;
+                                  });
+                                },
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ),
+                          )
+                  ],
                 ),
               ),
               Expanded(
