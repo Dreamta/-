@@ -6,6 +6,7 @@ import 'package:bt_system/module/module_template.dart';
 import 'package:bt_system/module/stu_module.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 // ignore: must_be_immutable
 class RightSide extends StatefulWidget {
@@ -269,6 +270,7 @@ class _RightSideState extends State<RightSide> {
   _handleDoubleTap(Moudle moudle) async {
     // 当前价格
     late int curPrice;
+    late int price;
     _curCourseType = (moudle as CourseMoudle).courseType;
 
     // 根据左侧选择的人物确定右侧课程的关系
@@ -281,6 +283,7 @@ class _RightSideState extends State<RightSide> {
         // ignore: unnecessary_cast
         courseId: (moudle as CourseMoudle).id);
     curPrice = studentCourse.price ?? 0;
+    price = curPrice;
     TextEditingController controller = TextEditingController()
       ..text = '${studentCourse.price ?? ''}';
 
@@ -293,91 +296,106 @@ class _RightSideState extends State<RightSide> {
     // ignore: use_build_context_synchronously
     showDialog(
         context: context,
-        builder: (context) => StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) => Dialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                child: SizedBox(
-                  height: 50,
-                  width: 500,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text(studentCourse.studentName),
-                      Text(gradeToString[intToGrade[Global.caculateStudyYear() -
-                          studentCourse.registYear +
-                          studentCourse.registGrade]!]!),
-                      Text(subTypeToString[moudle.subject]!),
-                      SizedBox(
-                        width: 60,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 5),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton(
-                              value: courseTypeToString[_curCourseType]!,
-                              onChanged: (value) {
-                                setState(() {
-                                  _curCourseType = stringToCourseType[value]!;
-                                });
-                              },
-                              items: _courseTypeList
-                                  .map<DropdownMenuItem<String>>(
-                                      (CourseType value) {
-                                return DropdownMenuItem<String>(
-                                  value: courseTypeToString[value],
-                                  child: Text(courseTypeToString[value]!),
-                                );
-                              }).toList(),
-                              alignment: AlignmentDirectional.center,
-                            ),
-                          ),
-                        ),
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) => Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              child: SizedBox(
+                height: 50,
+                width: 500,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(studentCourse.studentName),
+                    Text(gradeToString[intToGrade[Global.caculateStudyYear() -
+                        studentCourse.registYear +
+                        studentCourse.registGrade]!]!),
+                    Text(subTypeToString[moudle.subject]!),
+                    Text(courseTypeToString[_curCourseType]!),
+                    // SizedBox(
+                    //     width: 60,
+                    // child: Container(
+                    //   padding: const EdgeInsets.symmetric(vertical: 5),
+                    //   child: DropdownButtonHideUnderline(
+                    //     child: DropdownButton(
+                    //       value: courseTypeToString[_curCourseType]!,
+                    //       onChanged: (value) {
+                    //         setState(() {
+                    //           _curCourseType = stringToCourseType[value]!;
+                    //         });
+                    //       },
+                    //       items: _courseTypeList
+                    //           .map<DropdownMenuItem<String>>(
+                    //               (CourseType value) {
+                    //         return DropdownMenuItem<String>(
+                    //           value: courseTypeToString[value],
+                    //           child: Text(courseTypeToString[value]!),
+                    //         );
+                    //       }).toList(),
+                    //       alignment: AlignmentDirectional.center,
+                    //     ),
+                    //   ),
+                    // ),
+                    // ),
+                    SizedBox(
+                      width: 80,
+                      child: TextField(
+                        controller: controller,
+                        keyboardType: TextInputType.number,
+                        focusNode: _focusNode,
+                        decoration: InputDecoration(
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 10),
+                            border: InputBorder.none,
+                            hintText: '${studentCourse.price ?? '未报价'}'),
+                        onSubmitted: (String value) =>
+                            curPrice = int.parse(value == '未报价' ? '0' : value),
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        textAlign: TextAlign.center,
                       ),
-                      SizedBox(
-                        width: 80,
-                        child: TextField(
-                          controller: controller,
-                          keyboardType: TextInputType.number,
-                          focusNode: _focusNode,
-                          decoration: InputDecoration(
-                              contentPadding:
-                                  const EdgeInsets.symmetric(vertical: 10),
-                              border: InputBorder.none,
-                              hintText: '${studentCourse.price ?? '未报价'}'),
-                          onSubmitted: (String value) => curPrice =
-                              int.parse(value == '未报价' ? '0' : value),
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          /// 点击后修改此人的对应类型课程的价格
-                          /// 询问是否修改所有价格
-                          /// 价格有变化再修改，避免不必要的更新
-                          if (curPrice != studentCourse.price) {
-                            Global.database.modifyStudetCourse(
-                                studentCourse: studentCourse,
-                                newPrice: curPrice);
-                          }
-                        },
-                        child: Container(
-                            decoration: BoxDecoration(
-                                color: Colors.amber,
-                                borderRadius: BorderRadius.circular(5)),
-                            padding: const EdgeInsets.all(7),
-                            child: const Text(
-                              '修改报价',
-                              style: TextStyle(color: Colors.white),
-                            )),
-                      )
-                    ],
-                  ),
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        /// 点击后修改此人的对应类型课程的价格
+                        /// 询问是否修改所有价格
+                        /// 价格有变化再修改，避免不必要的更新
+                        if (curPrice != price) {
+                          await Global.showLoadingDialog(
+                              context,
+                              () => Global.database.modifyStudetCourse(
+                                  studentCourse: studentCourse,
+                                  newPrice: curPrice));
+                          price = curPrice;
+                          showSimpleNotification(
+                              const Center(child: Text('修改成功')),
+                              background:
+                                  const Color.fromARGB(193, 120, 232, 152),
+                              slideDismissDirection: DismissDirection.vertical);
+                        } else {
+                          showSimpleNotification(
+                              const Center(child: Text('修改失败，当前价格与原始价格一致！')),
+                              background: Colors.redAccent);
+                        }
+                      },
+                      child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.amber,
+                              borderRadius: BorderRadius.circular(5)),
+                          padding: const EdgeInsets.all(7),
+                          child: const Text(
+                            '修改报价',
+                            style: TextStyle(color: Colors.white),
+                          )),
+                    )
+                  ],
                 ),
               ),
-            ));
+            ),
+          );
+        });
   }
 }
 

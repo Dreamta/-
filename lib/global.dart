@@ -50,7 +50,10 @@ class Global {
 
 // 等待框
   static Future<void> showLoadingDialog<T>(
-      BuildContext context, Future<T> Function() asyncOperation) async {
+      BuildContext context,
+
+      /// 要等待的操作
+      Future<T> Function() asyncOperation) async {
     showDialog(
       context: context,
       barrierDismissible: false,

@@ -38,7 +38,7 @@ dependencies:
   file_picker: ^6.1.1
   pluto_menu_bar: ^3.0.1
   bitsdojo_window: ^0.1.6
-
+  overlay_support: ^2.1.0
   drift: ^2.14.1
   drift_sqflite: ^2.0.1
   path: ^1.8.3

@@ -4,6 +4,7 @@ import 'package:bt_system/global.dart';
 import 'package:bt_system/view/windows/custom_window.dart';
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 void main() async {
   runApp(const BtSystem());
@@ -34,19 +35,21 @@ class _BtSystemState extends State<BtSystem> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: FutureBuilder(
-            future: initFuture,
-            builder: (context, snapshot) {
-              sleep(Duration.zero);
-              if (snapshot.connectionState == ConnectionState.done) {
-                return CustomWindow();
-              } else {
-                return Container();
-              }
-            }),
+    return OverlaySupport.global(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: FutureBuilder(
+              future: initFuture,
+              builder: (context, snapshot) {
+                sleep(Duration.zero);
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return CustomWindow();
+                } else {
+                  return Container();
+                }
+              }),
+        ),
       ),
     );
   }
