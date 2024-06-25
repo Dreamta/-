@@ -13,6 +13,11 @@ class Students extends Table {
   TextColumn get name => text().withLength(min: 1, max: 50)();
   IntColumn get registGrade => integer().customConstraint('NOT NULL')();
   IntColumn get registYear => integer().customConstraint('NOT NULL')();
+  IntColumn get defaulPriceOf1V1 => integer().nullable()();
+  IntColumn get defaulPriceOf1V2 => integer().nullable()();
+  IntColumn get defaulPriceOf1V3 => integer().nullable()();
+  IntColumn get defaulPriceOf1V4 => integer().nullable()();
+  IntColumn get defaulPriceOfClass => integer().nullable()();
   @override
   Set<Column> get primaryKey => {name, registGrade, registYear};
 }
@@ -137,13 +142,13 @@ class MyDatabase extends _$MyDatabase {
       required GRADE registGrade,
       required int registYear,
       required int courseId}) async {
-    List list = (await (select(studentCourses)
+    return await (select(studentCourses)
           ..where((tbl) =>
               tbl.studentName.equals(stuName) &
               tbl.registGrade.equals(gradeToInt[registGrade]!) &
-              tbl.registYear.equals(registYear)))
-        .get());
-    return list.first;
+              tbl.registYear.equals(registYear) &
+              tbl.courseId.equals(courseId)))
+        .getSingle();
   }
 
 // 查找某学生上过的所有课程
@@ -319,6 +324,7 @@ class MyDatabase extends _$MyDatabase {
       required int registGrade,
       required int courseId,
       int? price}) async {
+    /// 先找到该学生查看是否有默认课程价格
     return await into(studentCourses).insert(StudentCoursesCompanion.insert(
       studentName: (studentName),
       registGrade: (registGrade),
@@ -398,6 +404,19 @@ class MyDatabase extends _$MyDatabase {
         await deleteCourse(course.id);
       }
     }
+  }
+
+// 修改课程价格
+  Future modifyStudetCourse(
+      {required Student_Course studentCourse, int? newPrice}) async {
+    await (update(studentCourses)
+          ..where((tbl) =>
+              tbl.studentName.equals(studentCourse.studentName) &
+              tbl.registGrade.equals(studentCourse.registGrade) &
+              tbl.registYear.equals(studentCourse.registYear) &
+              tbl.courseId.equals(studentCourse.courseId)))
+        .write(StudentCoursesCompanion(
+            price: Value(newPrice ?? studentCourse.price)));
   }
 }
 

@@ -144,13 +144,6 @@ class _BTMenuBarState extends State<BTMenuBar> {
     widget.onTap(moudles: courses, site: 2);
   }
 
-  // _findCourses(StudentModule moudle) async {
-  //   (await Global.database.findCoursesByStudent(
-  //           moudle.name, moudle.registGrade, moudle.registYear))
-  //       .map((e) => CourseMoudle.fromDatabase(e))
-  //       .toList();
-  // }
-
   // 从一个表单初始化学生信息
   void _initStudentInfoFromTable() async {
     try {

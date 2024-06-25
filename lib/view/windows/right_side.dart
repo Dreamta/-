@@ -20,6 +20,8 @@ class _RightSideState extends State<RightSide> {
   late List<CourseType> _courseTypeList;
   late CourseType _curCourseType;
   final FocusNode _focusNode = FocusNode();
+  final TextEditingController _controller = TextEditingController();
+  List<Moudle> _courseList = [];
   @override
   void initState() {
     _courseTypeList = [
@@ -34,11 +36,65 @@ class _RightSideState extends State<RightSide> {
   }
 
   @override
+  void didUpdateWidget(covariant RightSide oldWidget) {
+    _courseList = widget.list ?? [];
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(color: Colors.grey[100]),
       child: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (context) => Global.searchTextField(
+                          onChange: (value) => _onChange(value),
+                          hintText: '搜索'),
+                    ),
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                          icon: Padding(
+                            padding: EdgeInsets.only(top: 10),
+                            child: Icon(Icons.search_outlined),
+                          ),
+                          enabled: false,
+                          hintText: '搜索'),
+                    ),
+                  ),
+                ),
+                _controller.text == ''
+                    ? Container()
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: SizedBox(
+                          width: 30,
+                          height: 40,
+                          child: GestureDetector(
+                            onTap: () {
+                              _controller.text = '';
+                              setState(() {
+                                _courseList = widget.list ?? [];
+                              });
+                            },
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ),
+                      )
+              ],
+            ),
+          ),
           const SizedBox(
             height: 30,
             child: Row(
@@ -58,7 +114,7 @@ class _RightSideState extends State<RightSide> {
               child: SingleChildScrollView(
             child: Column(
               children:
-                  widget.list?.map((e) => _nameCard(context, e)).toList() ?? [],
+                  _courseList.map((e) => _nameCard(context, e)).toList() ?? [],
             ),
           )),
         ],
@@ -70,6 +126,16 @@ class _RightSideState extends State<RightSide> {
   void dispose() {
     super.dispose();
     _focusNode.dispose();
+  }
+
+  _onChange(String value) {
+    _controller.text = value;
+    setState(() {
+      _courseList = Global.fuzzySearch(value, widget.list ?? []);
+      if (value == '') {
+        _courseList = widget.list ?? [];
+      }
+    });
   }
 
   /// 名称卡片
@@ -202,7 +268,7 @@ class _RightSideState extends State<RightSide> {
   /// 双击事件返回修改课程报价弹窗
   _handleDoubleTap(Moudle moudle) async {
     // 当前价格
-    int? curPrice;
+    late int curPrice;
     _curCourseType = (moudle as CourseMoudle).courseType;
 
     // 根据左侧选择的人物确定右侧课程的关系
@@ -214,6 +280,7 @@ class _RightSideState extends State<RightSide> {
         registYear: stu.registYear,
         // ignore: unnecessary_cast
         courseId: (moudle as CourseMoudle).id);
+    curPrice = studentCourse.price ?? 0;
     TextEditingController controller = TextEditingController()
       ..text = '${studentCourse.price ?? ''}';
 
@@ -287,7 +354,14 @@ class _RightSideState extends State<RightSide> {
                       ),
                       InkWell(
                         onTap: () {
-                          print(curPrice);
+                          /// 点击后修改此人的对应类型课程的价格
+                          /// 询问是否修改所有价格
+                          /// 价格有变化再修改，避免不必要的更新
+                          if (curPrice != studentCourse.price) {
+                            Global.database.modifyStudetCourse(
+                                studentCourse: studentCourse,
+                                newPrice: curPrice);
+                          }
                         },
                         child: Container(
                             decoration: BoxDecoration(

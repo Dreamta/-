@@ -32,8 +32,47 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
       type: DriftSqlType.int,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
+  static const VerificationMeta _defaulPriceOf1V1Meta =
+      const VerificationMeta('defaulPriceOf1V1');
   @override
-  List<GeneratedColumn> get $columns => [name, registGrade, registYear];
+  late final GeneratedColumn<int> defaulPriceOf1V1 = GeneratedColumn<int>(
+      'defaul_price_of1_v1', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _defaulPriceOf1V2Meta =
+      const VerificationMeta('defaulPriceOf1V2');
+  @override
+  late final GeneratedColumn<int> defaulPriceOf1V2 = GeneratedColumn<int>(
+      'defaul_price_of1_v2', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _defaulPriceOf1V3Meta =
+      const VerificationMeta('defaulPriceOf1V3');
+  @override
+  late final GeneratedColumn<int> defaulPriceOf1V3 = GeneratedColumn<int>(
+      'defaul_price_of1_v3', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _defaulPriceOf1V4Meta =
+      const VerificationMeta('defaulPriceOf1V4');
+  @override
+  late final GeneratedColumn<int> defaulPriceOf1V4 = GeneratedColumn<int>(
+      'defaul_price_of1_v4', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _defaulPriceOfClassMeta =
+      const VerificationMeta('defaulPriceOfClass');
+  @override
+  late final GeneratedColumn<int> defaulPriceOfClass = GeneratedColumn<int>(
+      'defaul_price_of_class', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        name,
+        registGrade,
+        registYear,
+        defaulPriceOf1V1,
+        defaulPriceOf1V2,
+        defaulPriceOf1V3,
+        defaulPriceOf1V4,
+        defaulPriceOfClass
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -66,6 +105,36 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
     } else if (isInserting) {
       context.missing(_registYearMeta);
     }
+    if (data.containsKey('defaul_price_of1_v1')) {
+      context.handle(
+          _defaulPriceOf1V1Meta,
+          defaulPriceOf1V1.isAcceptableOrUnknown(
+              data['defaul_price_of1_v1']!, _defaulPriceOf1V1Meta));
+    }
+    if (data.containsKey('defaul_price_of1_v2')) {
+      context.handle(
+          _defaulPriceOf1V2Meta,
+          defaulPriceOf1V2.isAcceptableOrUnknown(
+              data['defaul_price_of1_v2']!, _defaulPriceOf1V2Meta));
+    }
+    if (data.containsKey('defaul_price_of1_v3')) {
+      context.handle(
+          _defaulPriceOf1V3Meta,
+          defaulPriceOf1V3.isAcceptableOrUnknown(
+              data['defaul_price_of1_v3']!, _defaulPriceOf1V3Meta));
+    }
+    if (data.containsKey('defaul_price_of1_v4')) {
+      context.handle(
+          _defaulPriceOf1V4Meta,
+          defaulPriceOf1V4.isAcceptableOrUnknown(
+              data['defaul_price_of1_v4']!, _defaulPriceOf1V4Meta));
+    }
+    if (data.containsKey('defaul_price_of_class')) {
+      context.handle(
+          _defaulPriceOfClassMeta,
+          defaulPriceOfClass.isAcceptableOrUnknown(
+              data['defaul_price_of_class']!, _defaulPriceOfClassMeta));
+    }
     return context;
   }
 
@@ -81,6 +150,16 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
           .read(DriftSqlType.int, data['${effectivePrefix}regist_grade'])!,
       registYear: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}regist_year'])!,
+      defaulPriceOf1V1: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}defaul_price_of1_v1']),
+      defaulPriceOf1V2: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}defaul_price_of1_v2']),
+      defaulPriceOf1V3: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}defaul_price_of1_v3']),
+      defaulPriceOf1V4: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}defaul_price_of1_v4']),
+      defaulPriceOfClass: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}defaul_price_of_class']),
     );
   }
 
@@ -94,16 +173,41 @@ class Student extends DataClass implements Insertable<Student> {
   final String name;
   final int registGrade;
   final int registYear;
+  final int? defaulPriceOf1V1;
+  final int? defaulPriceOf1V2;
+  final int? defaulPriceOf1V3;
+  final int? defaulPriceOf1V4;
+  final int? defaulPriceOfClass;
   const Student(
       {required this.name,
       required this.registGrade,
-      required this.registYear});
+      required this.registYear,
+      this.defaulPriceOf1V1,
+      this.defaulPriceOf1V2,
+      this.defaulPriceOf1V3,
+      this.defaulPriceOf1V4,
+      this.defaulPriceOfClass});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['name'] = Variable<String>(name);
     map['regist_grade'] = Variable<int>(registGrade);
     map['regist_year'] = Variable<int>(registYear);
+    if (!nullToAbsent || defaulPriceOf1V1 != null) {
+      map['defaul_price_of1_v1'] = Variable<int>(defaulPriceOf1V1);
+    }
+    if (!nullToAbsent || defaulPriceOf1V2 != null) {
+      map['defaul_price_of1_v2'] = Variable<int>(defaulPriceOf1V2);
+    }
+    if (!nullToAbsent || defaulPriceOf1V3 != null) {
+      map['defaul_price_of1_v3'] = Variable<int>(defaulPriceOf1V3);
+    }
+    if (!nullToAbsent || defaulPriceOf1V4 != null) {
+      map['defaul_price_of1_v4'] = Variable<int>(defaulPriceOf1V4);
+    }
+    if (!nullToAbsent || defaulPriceOfClass != null) {
+      map['defaul_price_of_class'] = Variable<int>(defaulPriceOfClass);
+    }
     return map;
   }
 
@@ -112,6 +216,21 @@ class Student extends DataClass implements Insertable<Student> {
       name: Value(name),
       registGrade: Value(registGrade),
       registYear: Value(registYear),
+      defaulPriceOf1V1: defaulPriceOf1V1 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(defaulPriceOf1V1),
+      defaulPriceOf1V2: defaulPriceOf1V2 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(defaulPriceOf1V2),
+      defaulPriceOf1V3: defaulPriceOf1V3 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(defaulPriceOf1V3),
+      defaulPriceOf1V4: defaulPriceOf1V4 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(defaulPriceOf1V4),
+      defaulPriceOfClass: defaulPriceOfClass == null && nullToAbsent
+          ? const Value.absent()
+          : Value(defaulPriceOfClass),
     );
   }
 
@@ -122,6 +241,11 @@ class Student extends DataClass implements Insertable<Student> {
       name: serializer.fromJson<String>(json['name']),
       registGrade: serializer.fromJson<int>(json['registGrade']),
       registYear: serializer.fromJson<int>(json['registYear']),
+      defaulPriceOf1V1: serializer.fromJson<int?>(json['defaulPriceOf1V1']),
+      defaulPriceOf1V2: serializer.fromJson<int?>(json['defaulPriceOf1V2']),
+      defaulPriceOf1V3: serializer.fromJson<int?>(json['defaulPriceOf1V3']),
+      defaulPriceOf1V4: serializer.fromJson<int?>(json['defaulPriceOf1V4']),
+      defaulPriceOfClass: serializer.fromJson<int?>(json['defaulPriceOfClass']),
     );
   }
   @override
@@ -131,51 +255,112 @@ class Student extends DataClass implements Insertable<Student> {
       'name': serializer.toJson<String>(name),
       'registGrade': serializer.toJson<int>(registGrade),
       'registYear': serializer.toJson<int>(registYear),
+      'defaulPriceOf1V1': serializer.toJson<int?>(defaulPriceOf1V1),
+      'defaulPriceOf1V2': serializer.toJson<int?>(defaulPriceOf1V2),
+      'defaulPriceOf1V3': serializer.toJson<int?>(defaulPriceOf1V3),
+      'defaulPriceOf1V4': serializer.toJson<int?>(defaulPriceOf1V4),
+      'defaulPriceOfClass': serializer.toJson<int?>(defaulPriceOfClass),
     };
   }
 
-  Student copyWith({String? name, int? registGrade, int? registYear}) =>
+  Student copyWith(
+          {String? name,
+          int? registGrade,
+          int? registYear,
+          Value<int?> defaulPriceOf1V1 = const Value.absent(),
+          Value<int?> defaulPriceOf1V2 = const Value.absent(),
+          Value<int?> defaulPriceOf1V3 = const Value.absent(),
+          Value<int?> defaulPriceOf1V4 = const Value.absent(),
+          Value<int?> defaulPriceOfClass = const Value.absent()}) =>
       Student(
         name: name ?? this.name,
         registGrade: registGrade ?? this.registGrade,
         registYear: registYear ?? this.registYear,
+        defaulPriceOf1V1: defaulPriceOf1V1.present
+            ? defaulPriceOf1V1.value
+            : this.defaulPriceOf1V1,
+        defaulPriceOf1V2: defaulPriceOf1V2.present
+            ? defaulPriceOf1V2.value
+            : this.defaulPriceOf1V2,
+        defaulPriceOf1V3: defaulPriceOf1V3.present
+            ? defaulPriceOf1V3.value
+            : this.defaulPriceOf1V3,
+        defaulPriceOf1V4: defaulPriceOf1V4.present
+            ? defaulPriceOf1V4.value
+            : this.defaulPriceOf1V4,
+        defaulPriceOfClass: defaulPriceOfClass.present
+            ? defaulPriceOfClass.value
+            : this.defaulPriceOfClass,
       );
   @override
   String toString() {
     return (StringBuffer('Student(')
           ..write('name: $name, ')
           ..write('registGrade: $registGrade, ')
-          ..write('registYear: $registYear')
+          ..write('registYear: $registYear, ')
+          ..write('defaulPriceOf1V1: $defaulPriceOf1V1, ')
+          ..write('defaulPriceOf1V2: $defaulPriceOf1V2, ')
+          ..write('defaulPriceOf1V3: $defaulPriceOf1V3, ')
+          ..write('defaulPriceOf1V4: $defaulPriceOf1V4, ')
+          ..write('defaulPriceOfClass: $defaulPriceOfClass')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(name, registGrade, registYear);
+  int get hashCode => Object.hash(
+      name,
+      registGrade,
+      registYear,
+      defaulPriceOf1V1,
+      defaulPriceOf1V2,
+      defaulPriceOf1V3,
+      defaulPriceOf1V4,
+      defaulPriceOfClass);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Student &&
           other.name == this.name &&
           other.registGrade == this.registGrade &&
-          other.registYear == this.registYear);
+          other.registYear == this.registYear &&
+          other.defaulPriceOf1V1 == this.defaulPriceOf1V1 &&
+          other.defaulPriceOf1V2 == this.defaulPriceOf1V2 &&
+          other.defaulPriceOf1V3 == this.defaulPriceOf1V3 &&
+          other.defaulPriceOf1V4 == this.defaulPriceOf1V4 &&
+          other.defaulPriceOfClass == this.defaulPriceOfClass);
 }
 
 class StudentsCompanion extends UpdateCompanion<Student> {
   final Value<String> name;
   final Value<int> registGrade;
   final Value<int> registYear;
+  final Value<int?> defaulPriceOf1V1;
+  final Value<int?> defaulPriceOf1V2;
+  final Value<int?> defaulPriceOf1V3;
+  final Value<int?> defaulPriceOf1V4;
+  final Value<int?> defaulPriceOfClass;
   final Value<int> rowid;
   const StudentsCompanion({
     this.name = const Value.absent(),
     this.registGrade = const Value.absent(),
     this.registYear = const Value.absent(),
+    this.defaulPriceOf1V1 = const Value.absent(),
+    this.defaulPriceOf1V2 = const Value.absent(),
+    this.defaulPriceOf1V3 = const Value.absent(),
+    this.defaulPriceOf1V4 = const Value.absent(),
+    this.defaulPriceOfClass = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   StudentsCompanion.insert({
     required String name,
     required int registGrade,
     required int registYear,
+    this.defaulPriceOf1V1 = const Value.absent(),
+    this.defaulPriceOf1V2 = const Value.absent(),
+    this.defaulPriceOf1V3 = const Value.absent(),
+    this.defaulPriceOf1V4 = const Value.absent(),
+    this.defaulPriceOfClass = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : name = Value(name),
         registGrade = Value(registGrade),
@@ -184,12 +369,23 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     Expression<String>? name,
     Expression<int>? registGrade,
     Expression<int>? registYear,
+    Expression<int>? defaulPriceOf1V1,
+    Expression<int>? defaulPriceOf1V2,
+    Expression<int>? defaulPriceOf1V3,
+    Expression<int>? defaulPriceOf1V4,
+    Expression<int>? defaulPriceOfClass,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (name != null) 'name': name,
       if (registGrade != null) 'regist_grade': registGrade,
       if (registYear != null) 'regist_year': registYear,
+      if (defaulPriceOf1V1 != null) 'defaul_price_of1_v1': defaulPriceOf1V1,
+      if (defaulPriceOf1V2 != null) 'defaul_price_of1_v2': defaulPriceOf1V2,
+      if (defaulPriceOf1V3 != null) 'defaul_price_of1_v3': defaulPriceOf1V3,
+      if (defaulPriceOf1V4 != null) 'defaul_price_of1_v4': defaulPriceOf1V4,
+      if (defaulPriceOfClass != null)
+        'defaul_price_of_class': defaulPriceOfClass,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -198,11 +394,21 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       {Value<String>? name,
       Value<int>? registGrade,
       Value<int>? registYear,
+      Value<int?>? defaulPriceOf1V1,
+      Value<int?>? defaulPriceOf1V2,
+      Value<int?>? defaulPriceOf1V3,
+      Value<int?>? defaulPriceOf1V4,
+      Value<int?>? defaulPriceOfClass,
       Value<int>? rowid}) {
     return StudentsCompanion(
       name: name ?? this.name,
       registGrade: registGrade ?? this.registGrade,
       registYear: registYear ?? this.registYear,
+      defaulPriceOf1V1: defaulPriceOf1V1 ?? this.defaulPriceOf1V1,
+      defaulPriceOf1V2: defaulPriceOf1V2 ?? this.defaulPriceOf1V2,
+      defaulPriceOf1V3: defaulPriceOf1V3 ?? this.defaulPriceOf1V3,
+      defaulPriceOf1V4: defaulPriceOf1V4 ?? this.defaulPriceOf1V4,
+      defaulPriceOfClass: defaulPriceOfClass ?? this.defaulPriceOfClass,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -219,6 +425,21 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     if (registYear.present) {
       map['regist_year'] = Variable<int>(registYear.value);
     }
+    if (defaulPriceOf1V1.present) {
+      map['defaul_price_of1_v1'] = Variable<int>(defaulPriceOf1V1.value);
+    }
+    if (defaulPriceOf1V2.present) {
+      map['defaul_price_of1_v2'] = Variable<int>(defaulPriceOf1V2.value);
+    }
+    if (defaulPriceOf1V3.present) {
+      map['defaul_price_of1_v3'] = Variable<int>(defaulPriceOf1V3.value);
+    }
+    if (defaulPriceOf1V4.present) {
+      map['defaul_price_of1_v4'] = Variable<int>(defaulPriceOf1V4.value);
+    }
+    if (defaulPriceOfClass.present) {
+      map['defaul_price_of_class'] = Variable<int>(defaulPriceOfClass.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -231,6 +452,11 @@ class StudentsCompanion extends UpdateCompanion<Student> {
           ..write('name: $name, ')
           ..write('registGrade: $registGrade, ')
           ..write('registYear: $registYear, ')
+          ..write('defaulPriceOf1V1: $defaulPriceOf1V1, ')
+          ..write('defaulPriceOf1V2: $defaulPriceOf1V2, ')
+          ..write('defaulPriceOf1V3: $defaulPriceOf1V3, ')
+          ..write('defaulPriceOf1V4: $defaulPriceOf1V4, ')
+          ..write('defaulPriceOfClass: $defaulPriceOfClass, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();

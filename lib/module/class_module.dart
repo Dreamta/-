@@ -2,6 +2,7 @@ import 'package:bt_system/database/database.dart';
 import 'package:bt_system/global.dart';
 import 'package:bt_system/module/module_template.dart';
 import 'package:bt_system/module/stu_module.dart';
+import 'package:lpinyin/lpinyin.dart';
 
 class CourseMoudle extends Moudle {
   int id;
@@ -41,7 +42,17 @@ class CourseMoudle extends Moudle {
         courseType = stringToCourseType[course.courseType]!,
         teacher = course.teacher,
         grade = intToGrade[course.grade]!;
-  // studentNames = Global.database
-  //     .findStudentsByCourse(course.id)
-  //     .then((value) => value.map((e) => e.name).toList());
+
+  @override
+  String toString() {
+    return (date +
+            (beginTime ?? '') +
+            hour.toString() +
+            PinyinHelper.getPinyin(dayOfWeek +
+                subTypeToString[subject]! +
+                courseTypeToString[courseType]! +
+                teacher +
+                gradeToString[grade]!))
+        .replaceAll(' ', '');
+  }
 }

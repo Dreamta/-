@@ -78,6 +78,35 @@ class Global {
       Navigator.of(context).pop(); // 关闭对话框
     }
   }
+
+// 搜索框
+  static Widget searchTextField(
+      {required Function(String value) onChange, String hintText = ''}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 150),
+      child: Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 2, 30, 0),
+          child: SizedBox(
+            height: 50,
+            width: 500,
+            child: TextField(
+              onChanged: (value) => onChange(value),
+              decoration: InputDecoration(
+                  icon: const Padding(
+                    padding: EdgeInsets.only(top: 5.0),
+                    child: Icon(Icons.search_rounded),
+                  ),
+                  border: InputBorder.none,
+                  hintText: hintText),
+              autofocus: true,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// 常量定义
