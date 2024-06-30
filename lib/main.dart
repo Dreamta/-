@@ -38,6 +38,7 @@ class _BtSystemState extends State<BtSystem> {
     return OverlaySupport.global(
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+        theme: ThemeData(fontFamily: 'JetBrainsMono'),
         home: Scaffold(
           body: FutureBuilder(
               future: initFuture,

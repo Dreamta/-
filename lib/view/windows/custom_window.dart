@@ -60,17 +60,17 @@ class _CustomWindowState extends State<CustomWindow> {
                     },
                   ),
                   Expanded(
-                    child: Container(),
-                  ),
-                  SizedBox(
-                    width: 90,
-                    child: WindowTitleBarBox(
-                      child: Row(
-                        children: [
-                          Expanded(child: MoveWindow()),
-                          WindowButtons(),
-                        ],
-                      ),
+                    child: Row(
+                      children: [
+                        Expanded(child: MoveWindow()),
+                        SizedBox(
+                          width: 140,
+                          height: 30,
+                          child: WindowTitleBarBox(
+                            child: WindowButtons(),
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 ],
