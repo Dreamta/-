@@ -9,7 +9,7 @@ import 'package:overlay_support/overlay_support.dart';
 void main() async {
   runApp(const BtSystem());
   doWhenWindowReady(() {
-    const initialSize = Size(670, 700); // 设置一个初始大小
+    const initialSize = Size(750, 600); // 设置一个初始大小
     appWindow.size = initialSize;
     appWindow.minSize = initialSize;
     appWindow.alignment = Alignment.center; // 可以设置窗口在屏幕中的位置

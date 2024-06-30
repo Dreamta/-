@@ -56,7 +56,7 @@ class _RightSideState extends State<RightSide> {
                   child: GestureDetector(
                     onTap: () => showDialog(
                       context: context,
-                      builder: (context) => Global.searchTextField(
+                      builder: (context) => searchTextField(
                           onChange: (value) => _onChange(value),
                           hintText: '搜索'),
                     ),
@@ -313,31 +313,6 @@ class _RightSideState extends State<RightSide> {
                         studentCourse.registGrade]!]!),
                     Text(subTypeToString[moudle.subject]!),
                     Text(courseTypeToString[_curCourseType]!),
-                    // SizedBox(
-                    //     width: 60,
-                    // child: Container(
-                    //   padding: const EdgeInsets.symmetric(vertical: 5),
-                    //   child: DropdownButtonHideUnderline(
-                    //     child: DropdownButton(
-                    //       value: courseTypeToString[_curCourseType]!,
-                    //       onChanged: (value) {
-                    //         setState(() {
-                    //           _curCourseType = stringToCourseType[value]!;
-                    //         });
-                    //       },
-                    //       items: _courseTypeList
-                    //           .map<DropdownMenuItem<String>>(
-                    //               (CourseType value) {
-                    //         return DropdownMenuItem<String>(
-                    //           value: courseTypeToString[value],
-                    //           child: Text(courseTypeToString[value]!),
-                    //         );
-                    //       }).toList(),
-                    //       alignment: AlignmentDirectional.center,
-                    //     ),
-                    //   ),
-                    // ),
-                    // ),
                     SizedBox(
                       width: 80,
                       child: TextField(
@@ -363,22 +338,14 @@ class _RightSideState extends State<RightSide> {
                         /// 询问是否修改所有价格
                         /// 价格有变化再修改，避免不必要的更新
                         if (curPrice != price) {
-                          await Global.showLoadingDialog(
+                          await showLoadingDialog(
                               context,
                               () => Global.database.modifyStudetCourse(
                                   studentCourse: studentCourse,
                                   newPrice: curPrice));
                           price = curPrice;
-                          showSimpleNotification(
-                              const Center(child: Text('修改成功')),
-                              background:
-                                  const Color.fromARGB(193, 120, 232, 152),
-                              slideDismissDirection: DismissDirection.vertical);
-                        } else {
-                          showSimpleNotification(
-                              const Center(child: Text('修改失败，当前价格与原始价格一致！')),
-                              background: Colors.redAccent);
-                        }
+                          showSuccessNotification('修改成功');
+                        } else {}
                       },
                       child: Container(
                           decoration: BoxDecoration(

@@ -1,13 +1,9 @@
-import 'package:bt_system/excel/init_info.dart';
-import 'package:bt_system/exception/database_exception.dart';
 import 'package:bt_system/global.dart';
 import 'package:bt_system/module/class_module.dart';
 import 'package:bt_system/module/module_template.dart';
 import 'package:bt_system/module/stu_module.dart';
 import 'package:bt_system/module/teacher_module.dart';
-import 'package:bt_system/view/menu/menu_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:lpinyin/lpinyin.dart';
 
 class LeftSide extends StatefulWidget {
   List<Moudle> moudleList;
@@ -68,7 +64,7 @@ class _LeftSideState extends State<LeftSide> {
                       child: GestureDetector(
                         onTap: () => showDialog(
                           context: context,
-                          builder: (context) => Global.searchTextField(
+                          builder: (context) => searchTextField(
                               onChange: _onChange,
                               hintText:
                                   "在${widget.moudleList.isEmpty ? '全部' : _getMoudleType(widget.moudleList[0])}中搜索"),

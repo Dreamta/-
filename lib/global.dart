@@ -4,6 +4,7 @@ import 'package:bt_system/module/module_template.dart';
 import 'package:flutter/material.dart';
 
 import 'package:lpinyin/lpinyin.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 class Global {
   static late final MyDatabase database;
@@ -47,69 +48,82 @@ class Global {
 
     return result;
   }
+}
 
 // 等待框
-  static Future<void> showLoadingDialog<T>(
-      BuildContext context,
+Future<void> showLoadingDialog<T>(
+    BuildContext context,
 
-      /// 要等待的操作
-      Future<T> Function() asyncOperation) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const Dialog(
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 16),
-                Text("Loading..."),
-              ],
-            ),
+    /// 要等待的操作
+    Future<T> Function() asyncOperation) async {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return const Dialog(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text("Loading..."),
+            ],
           ),
-        );
-      },
-    );
+        ),
+      );
+    },
+  );
 
-    try {
-      await asyncOperation();
-    } finally {
-      // ignore: use_build_context_synchronously
-      Navigator.of(context).pop(); // 关闭对话框
-    }
+  try {
+    await asyncOperation();
+  } finally {
+    // ignore: use_build_context_synchronously
+    Navigator.of(context).pop(); // 关闭对话框
   }
+}
 
 // 搜索框
-  static Widget searchTextField(
-      {required Function(String value) onChange, String hintText = ''}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 150),
-      child: Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 2, 30, 0),
-          child: SizedBox(
-            height: 50,
-            width: 500,
-            child: TextField(
-              onChanged: (value) => onChange(value),
-              decoration: InputDecoration(
-                  icon: const Padding(
-                    padding: EdgeInsets.only(top: 5.0),
-                    child: Icon(Icons.search_rounded),
-                  ),
-                  border: InputBorder.none,
-                  hintText: hintText),
-              autofocus: true,
-            ),
+Widget searchTextField(
+    {required Function(String value) onChange, String hintText = ''}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 150),
+    child: Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 2, 30, 0),
+        child: SizedBox(
+          height: 50,
+          width: 500,
+          child: TextField(
+            onChanged: (value) => onChange(value),
+            decoration: InputDecoration(
+                icon: const Padding(
+                  padding: EdgeInsets.only(top: 5.0),
+                  child: Icon(Icons.search_rounded),
+                ),
+                border: InputBorder.none,
+                hintText: hintText),
+            autofocus: true,
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
+// 成功弹窗
+showSuccessNotification(String content) {
+  showSimpleNotification(Center(child: Text(content)),
+      background: const Color.fromARGB(193, 120, 232, 152),
+      slideDismissDirection: DismissDirection.vertical);
+}
+
+//失败弹窗
+showErrorNotification(String content) {
+  showSimpleNotification(Center(child: Text(content)),
+      background: Colors.redAccent);
 }
 
 /// 常量定义

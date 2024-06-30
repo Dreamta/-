@@ -7,6 +7,7 @@ import 'package:bt_system/module/module_template.dart';
 import 'package:bt_system/module/stu_module.dart';
 import 'package:bt_system/module/teacher_module.dart';
 import 'package:flutter/material.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:pluto_menu_bar/pluto_menu_bar.dart';
 
 class BTMenuBar extends StatefulWidget {
@@ -44,8 +45,8 @@ class _BTMenuBarState extends State<BTMenuBar> {
           PlutoMenuItem(
               title: '添加学生',
               onTap: () {
-                late String newStuName;
-                String? gradeStr;
+                String? newStuName;
+                String gradeStr = GRADE.values.last.toString().split('.').last;
                 showDialog(
                     context: context,
                     builder: (context) {
@@ -57,15 +58,9 @@ class _BTMenuBarState extends State<BTMenuBar> {
                               width: 400,
                               height: 120,
                               child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  const SizedBox(
-                                      width: 300,
-                                      height: 20,
-                                      child: Center(
-                                          child: Padding(
-                                        padding: EdgeInsets.all(2.0),
-                                        child: Text("添加学生"),
-                                      ))),
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
@@ -81,11 +76,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
                                         ),
                                       ),
                                       DropdownButton(
-                                          value: gradeStr ??
-                                              GRADE.values.last
-                                                  .toString()
-                                                  .split('.')
-                                                  .last,
+                                          value: gradeStr,
                                           items: GRADE.values
                                               .map((e) => DropdownMenuItem(
                                                     value: e
@@ -99,22 +90,33 @@ class _BTMenuBarState extends State<BTMenuBar> {
                                                   ))
                                               .toList(),
                                           onChanged: (value) {
-                                            setState(() {
-                                              gradeStr = value;
-                                            });
+                                            if (value != null) {
+                                              setState(() {
+                                                gradeStr = value;
+                                              });
+                                            }
                                           }),
                                     ],
                                   ),
                                   InkWell(
+                                    onTap: () => _addStudent(
+                                        newStuName, gradeStrToGrade[gradeStr]!),
                                     child: Container(
+                                        width: 100,
+                                        height: 40,
                                         decoration: BoxDecoration(
                                             color: Colors.amber,
                                             borderRadius:
                                                 BorderRadius.circular(5)),
-                                        padding: const EdgeInsets.all(7),
-                                        child: const Text(
-                                          '添加学生',
-                                          style: TextStyle(color: Colors.white),
+                                        padding: const EdgeInsets.all(5),
+                                        child: const Center(
+                                          child: Text(
+                                            '添加学生',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 17),
+                                          ),
                                         )),
                                   )
                                 ],
@@ -144,14 +146,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
         ),
         PlutoMenuItem(
           title: '查看课程',
-          onTap: () async {
-            // 7418 12 2024 刘博文
-            await Global.database.findStudentCourse(
-                stuName: '刘博文',
-                registGrade: GRADE.grade12,
-                registYear: 2024,
-                courseId: 7418);
-          },
+          onTap: () async {},
         ),
         PlutoMenuItem(
           title: '清空课程',
@@ -200,8 +195,13 @@ class _BTMenuBarState extends State<BTMenuBar> {
     widget.onTap(moudles: students);
   }
 
-  Future _addStudent(String name, GRADE grade) async {
-    await Global.database.addStudent(name, grade);
+  Future _addStudent(String? name, GRADE grade) async {
+    if (name != null) {
+      await Global.database.addStudent(name, grade);
+      showSuccessNotification('添加成功');
+    } else {
+      showErrorNotification('请输入学生姓名！');
+    }
   }
 
   Future _showAllTeachers() async {
@@ -232,7 +232,7 @@ class _BTMenuBarState extends State<BTMenuBar> {
   // 从一个表单初始化学生信息
   void _initStudentInfoFromTable() async {
     try {
-      Global.showLoadingDialog(context, initInfoFromExcel);
+      showLoadingDialog(context, initInfoFromExcel);
 
       setState(() {
         dataBaseHasInit = true;
@@ -245,8 +245,17 @@ class _BTMenuBarState extends State<BTMenuBar> {
 
   /// 删除所有学生
   _deleteAllStudents() async {
-    Global.showLoadingDialog(context, Global.database.deleteAllStudents);
+    showLoadingDialog(context, Global.database.deleteAllStudents);
 
     widget.onTap();
   }
 }
+
+Map<String, GRADE> gradeStrToGrade = {
+  'grade7': GRADE.grade7,
+  'grade8': GRADE.grade8,
+  'grade9': GRADE.grade9,
+  'grade10': GRADE.grade10,
+  'grade11': GRADE.grade11,
+  'grade12': GRADE.grade12,
+};
