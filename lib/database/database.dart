@@ -43,9 +43,10 @@ class Courses extends Table {
 @DataClassName('Teacher')
 class Teachers extends Table {
   TextColumn get name => text().withLength(min: 1, max: 50)();
+  TextColumn get subject => text().withLength(min: 1, max: 50)();
 
   @override
-  Set<Column> get primaryKey => {name};
+  Set<Column> get primaryKey => {name, subject};
 }
 
 // 学生-课程表

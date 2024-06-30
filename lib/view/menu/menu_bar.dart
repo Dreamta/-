@@ -41,7 +41,88 @@ class _BTMenuBarState extends State<BTMenuBar> {
           PlutoMenuItem(title: '初始化', onTap: _initStudentInfoFromTable),
           PlutoMenuItem.divider(height: 1),
           // 如果数据库未初始化，需要初始化再添加
-          PlutoMenuItem(title: '添加学生', onTap: () {}),
+          PlutoMenuItem(
+              title: '添加学生',
+              onTap: () {
+                late String newStuName;
+                String? gradeStr;
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return StatefulBuilder(
+                        builder: (context, setState) => Dialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          child: SizedBox(
+                              width: 400,
+                              height: 120,
+                              child: Column(
+                                children: [
+                                  const SizedBox(
+                                      width: 300,
+                                      height: 20,
+                                      child: Center(
+                                          child: Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Text("添加学生"),
+                                      ))),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      SizedBox(
+                                        width: 100,
+                                        child: TextField(
+                                          onChanged: (value) =>
+                                              newStuName = value,
+                                          decoration: const InputDecoration(
+                                              border: InputBorder.none,
+                                              hintText: '学生姓名'),
+                                        ),
+                                      ),
+                                      DropdownButton(
+                                          value: gradeStr ??
+                                              GRADE.values.last
+                                                  .toString()
+                                                  .split('.')
+                                                  .last,
+                                          items: GRADE.values
+                                              .map((e) => DropdownMenuItem(
+                                                    value: e
+                                                        .toString()
+                                                        .split('.')
+                                                        .last,
+                                                    child: Text(e
+                                                        .toString()
+                                                        .split('.')
+                                                        .last),
+                                                  ))
+                                              .toList(),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              gradeStr = value;
+                                            });
+                                          }),
+                                    ],
+                                  ),
+                                  InkWell(
+                                    child: Container(
+                                        decoration: BoxDecoration(
+                                            color: Colors.amber,
+                                            borderRadius:
+                                                BorderRadius.circular(5)),
+                                        padding: const EdgeInsets.all(7),
+                                        child: const Text(
+                                          '添加学生',
+                                          style: TextStyle(color: Colors.white),
+                                        )),
+                                  )
+                                ],
+                              )),
+                        ),
+                      );
+                    });
+              }),
           PlutoMenuItem(
               title: '查看现有学生',
               enable: dataBaseHasInit,
@@ -117,6 +198,10 @@ class _BTMenuBarState extends State<BTMenuBar> {
       print(e.message);
     }
     widget.onTap(moudles: students);
+  }
+
+  Future _addStudent(String name, GRADE grade) async {
+    await Global.database.addStudent(name, grade);
   }
 
   Future _showAllTeachers() async {
