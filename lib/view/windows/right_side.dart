@@ -345,7 +345,9 @@ class _RightSideState extends State<RightSide> {
                                   newPrice: curPrice));
                           price = curPrice;
                           showSuccessNotification('修改成功');
-                        } else {}
+                        } else {
+                          showErrorNotification('修改失败，当前价格与原始价格一致！');
+                        }
                       },
                       child: Container(
                           decoration: BoxDecoration(

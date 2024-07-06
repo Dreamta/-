@@ -140,8 +140,8 @@ class _BTMenuBarState extends State<BTMenuBar> {
       PlutoMenuItem(title: '课程', children: [
         PlutoMenuItem(
           title: '查看所有课程',
-          onTap: () async {
-            await _findAllCourses();
+          onTap: () {
+            showLoadingDialog(context, () => _findAllCourses());
           },
         ),
         PlutoMenuItem(
