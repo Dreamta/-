@@ -158,13 +158,6 @@ class _RightSideState extends State<RightSide> {
         ),
         Text("${gradeToInt[moudle.registGrade]!}")
       ]);
-      // func = () async {
-      //   List<Moudle> list = (await Global.database.findCoursesByStudent(
-      //           moudle.name, moudle.registGrade, moudle.registYear))
-      //       .map((e) => CourseMoudle.fromDatabase(e))
-      //       .toList();
-      //   return list;
-      // };
 
       /// 右侧课程卡片
     } else if (moudle is CourseMoudle) {
@@ -338,13 +331,52 @@ class _RightSideState extends State<RightSide> {
                         /// 询问是否修改所有价格
                         /// 价格有变化再修改，避免不必要的更新
                         if (curPrice != price) {
-                          await showLoadingDialog(
-                              context,
-                              () => Global.database.modifyStudetCourse(
-                                  studentCourse: studentCourse,
-                                  newPrice: curPrice));
+                          // 指示是否需要修改所有同类课程价格
+                          bool needChangeAll = false;
+                          await showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                    title: const Text('批量修改'),
+                                    content: const Text('是否将此修改应用至所有同类课程？'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            needChangeAll = false;
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('取消')),
+                                      TextButton(
+                                          onPressed: () {
+                                            needChangeAll = true;
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('确定'))
+                                    ],
+                                  ));
+                          if (needChangeAll) {
+                            // 查找该学生所有此老师的此类课程
+                            // 修改所有价格
+                            // ignore: use_build_context_synchronously
+                            await showLoadingDialog(
+                                context,
+                                () => Global.database
+                                    .updateCoursePriceForTeacher(
+                                        studentName: studentCourse.studentName,
+                                        teacherName: moudle.teacher,
+                                        courseType: _curCourseType,
+                                        newPrice: curPrice));
+                          } else {
+                            // ignore: use_build_context_synchronously
+                            await showLoadingDialog(
+                                context,
+                                () => Global.database.modifyStudetCourse(
+                                    studentCourse: studentCourse,
+                                    newPrice: curPrice));
+                          }
+
                           price = curPrice;
                           showSuccessNotification('修改成功');
+                          Navigator.of(context).pop();
                         } else {
                           showErrorNotification('修改失败，当前价格与原始价格一致！');
                         }

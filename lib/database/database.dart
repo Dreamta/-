@@ -131,6 +131,35 @@ class MyDatabase extends _$MyDatabase {
     return await query.get();
   }
 
+  Future<void> updateCoursePriceForTeacher({
+    required String studentName,
+    required String teacherName,
+    required CourseType courseType,
+    required int newPrice,
+  }) async {
+    // final student = await (select(students)
+    //       ..where((tbl) => tbl.name.equals(studentName)))
+    //     .getSingleOrNull();
+
+    // if (student == null) {
+    //   throw Exception('Student not found');
+    // }
+
+    final courseQuery = select(courses)
+      ..where((tbl) => tbl.teacher.equals(teacherName))
+      ..where((tbl) => tbl.courseType.equals(courseTypeToString[courseType]!));
+
+    final coursesTable = await courseQuery.get();
+
+    for (final course in coursesTable) {
+      await (update(studentCourses)
+            ..where((tbl) =>
+                tbl.studentName.equals(studentName) &
+                tbl.courseId.equals(course.id)))
+          .write(StudentCoursesCompanion(price: Value(newPrice)));
+    }
+  }
+
 // 根据ID查找课程
   Future<Course?> findCourseById(int id) async {
     return await (select(courses)..where((tbl) => tbl.id.equals(id)))

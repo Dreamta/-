@@ -134,7 +134,31 @@ class _BTMenuBarState extends State<BTMenuBar> {
           PlutoMenuItem(
               title: '清除所有学生',
               enable: dataBaseHasInit,
-              onTap: _deleteAllStudents)
+              onTap: () {
+                bool needDeleteAll = false;
+                showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                          title: const Text('警告'),
+                          content: const Text('你正在准备清除所有学生数据,此操作不可逆!'),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('取消')),
+                            TextButton(
+                                onPressed: () {
+                                  needDeleteAll = true;
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('确定'))
+                          ],
+                        ));
+                if (needDeleteAll) {
+                  _deleteAllStudents();
+                }
+              })
         ],
       ),
       PlutoMenuItem(title: '课程', children: [
@@ -145,13 +169,31 @@ class _BTMenuBarState extends State<BTMenuBar> {
           },
         ),
         PlutoMenuItem(
-          title: '查看课程',
-          onTap: () async {},
-        ),
-        PlutoMenuItem(
           title: '清空课程',
           onTap: () async {
-            Future future = Global.database.deleteAllCourses();
+            bool needDeleteAll = false;
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                      title: const Text('警告'),
+                      content: const Text('你正在准备清除所有课程数据,此操作不可逆!'),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('取消')),
+                        TextButton(
+                            onPressed: () {
+                              needDeleteAll = true;
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('确定'))
+                      ],
+                    ));
+            if (needDeleteAll) {
+              Global.database.deleteAllCourses();
+            }
           },
         ),
       ]),
@@ -165,7 +207,29 @@ class _BTMenuBarState extends State<BTMenuBar> {
         PlutoMenuItem(
           title: '清空老师',
           onTap: () async {
-            await Global.database.deleteAllTeachers();
+            bool needDeleteAll = false;
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                      title: const Text('警告'),
+                      content: const Text('你正在准备清除所有老师数据,此操作不可逆!'),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('取消')),
+                        TextButton(
+                            onPressed: () {
+                              needDeleteAll = true;
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('确定'))
+                      ],
+                    ));
+            if (needDeleteAll) {
+              Global.database.deleteAllTeachers();
+            }
           },
         ),
       ]),
